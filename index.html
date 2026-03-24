@@ -3,17 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Own the Road v3.0 | TOP-DOWN RACER</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <title>Own the Road v3.2 | ATUALIZAÇÃO RECENTE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@900&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
             --f1-red: #E10600;
             --safety-cyan: #00F2FF;
             --caution-yellow: #FFD700;
-            --dark-bg: #111;
-            --glass: rgba(20, 20, 20, 0.95);
+            --dark-bg: #050505;
             --neon: 0 0 20px rgba(0, 242, 255, 0.4);
         }
 
@@ -35,10 +32,10 @@
             height: 100vh;
             max-width: 600px;
             max-height: 900px;
-            background: #222;
+            background: #111;
             overflow: hidden;
             border: 5px solid #000;
-            box-shadow: 0 0 80px rgba(0,0,0,0.9);
+            box-shadow: 0 0 100px rgba(0,242,255,0.2);
         }
 
         canvas { display: block; width: 100%; height: 100%; }
@@ -46,179 +43,118 @@
         /* HUD */
         .hud-overlay {
             position: absolute;
-            top: 20px;
-            left: 20px;
-            right: 20px;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            pointer-events: none;
+            top: 20px; left: 20px; right: 20px;
+            z-index: 10; display: flex; flex-direction: column; gap: 8px; pointer-events: none;
         }
 
         .stat-badge {
-            background: var(--glass);
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-weight: 700;
-            border-left: 5px solid var(--safety-cyan);
+            background: rgba(0,0,0,0.8);
+            padding: 10px 15px; border-radius: 8px; font-weight: 700;
+            border-left: 4px solid var(--safety-cyan);
             box-shadow: var(--neon);
             width: fit-content;
         }
 
-        /* Durability Bar */
-        .health-container {
-            width: 150px;
-            height: 10px;
-            background: #333;
-            border-radius: 5px;
-            margin-top: 5px;
-            overflow: hidden;
+        .durability-bar {
+            width: 100px; height: 8px; background: #333; border-radius: 4px; margin-top: 5px; overflow: hidden;
         }
-        #health-fill { width: 100%; height: 100%; background: #00ff00; transition: 0.3s; }
+        #hp-fill { width: 100%; height: 100%; background: #0f0; transition: width 0.3s; }
 
-        /* Speedometer */
-        #speedometer {
-            position: absolute;
-            bottom: 30px;
-            left: 30px;
-            width: 120px;
-            height: 120px;
-            background: var(--glass);
-            border: 4px solid #333;
-            border-radius: 50%;
-            z-index: 10;
-        }
-        .speed-gauge {
-            width: 100%; height: 100%;
+        /* SPEEDOMETER */
+        #speed-gauge {
+            position: absolute; bottom: 30px; left: 20px;
+            width: 110px; height: 110px;
+            background: rgba(0,0,0,0.8);
+            border: 3px solid #333; border-radius: 50%;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 10; box-shadow: var(--neon);
         }
-        #speed-val { font-size: 1.5rem; font-weight: 900; color: var(--safety-cyan); }
-        .kmh { font-size: 0.6rem; color: #888; letter-spacing: 1px; }
+        #speed-num { font-size: 1.8rem; font-weight: 900; color: var(--safety-cyan); font-family: 'Outfit'; }
+        .unit { font-size: 0.6rem; color: #888; }
 
-        #map-container {
-            position: absolute;
-            top: 150px;
-            right: 20px;
-            width: 15px;
-            height: 300px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 10px;
-            z-index: 10;
+        /* MINI MAP */
+        #track-map {
+            position: absolute; top: 150px; right: 20px;
+            width: 10px; height: 300px;
+            background: rgba(255,255,255,0.1); border-radius: 5px;
         }
-        #p-pos {
-            position: absolute;
-            width: 25px; height: 10px; background: var(--f1-red); left: -5px; border-radius: 2px;
-            box-shadow: 0 0 10px var(--f1-red);
+        #p-marker {
+            position: absolute; left: -10px; width: 30px; height: 6px; 
+            background: var(--f1-red); border-radius: 3px; box-shadow: 0 0 10px var(--f1-red);
         }
 
         /* SCREENS */
-        .screen-ui {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(10, 10, 15, 0.98);
+        .ui-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 100; padding: 30px; text-align: center;
+            z-index: 100; text-align: center; padding: 20px;
         }
 
         .hide { display: none !important; }
 
-        .title-glow {
-            font-size: 3rem; font-weight: 900; text-transform: uppercase; margin-bottom: 20px;
-            background: linear-gradient(to bottom, #fff, #888);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        }
-
-        .btn-style {
+        .btn-action {
             background: var(--f1-red); color: white; border: none; padding: 15px 40px;
             font-size: 1.2rem; font-weight: 900; cursor: pointer; border-radius: 4px;
-            margin: 10px; transition: 0.3s;
+            margin: 10px; transition: 0.2s;
         }
-        .btn-style:hover { opacity: 0.8; transform: translateY(-2px); }
+        .btn-action:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(225,6,0,0.4); }
 
-        /* QUIZ */
-        #screen-quiz #quiz-box {
-            background: #000; border: 2px solid var(--safety-cyan); border-radius: 20px;
-            padding: 30px; max-width: 90%;
+        /* UPDATE BANNER */
+        #update-banner {
+            position: absolute; top: 0; left: 0; width: 100%; background: var(--safety-cyan);
+            color: #000; font-weight: 900; padding: 5px; font-size: 0.7rem; z-index: 200;
+            text-transform: uppercase; letter-spacing: 2px;
         }
-        .opt-btn {
-            background: #111; border: 1px solid #444; color: white; width: 100%;
-            padding: 15px; margin: 5px 0; border-radius: 8px; cursor: pointer;
-            font-size: 1rem; transition: 0.2s;
-        }
-        .opt-btn:hover { border-color: var(--safety-cyan); background: #1a1a1a; }
-
-        /* REWARD */
-        #reward-toast {
-            position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%);
-            background: var(--caution-yellow); color: #000; padding: 10px 30px;
-            border-radius: 50px; font-weight: 900; z-index: 60; display: none;
-            animation: slideUp 0.5s ease-out;
-        }
-        @keyframes slideUp { from { bottom: 50px; opacity: 0; } to { bottom: 100px; opacity: 1; } }
 
     </style>
 </head>
 <body>
 
 <div id="game-area">
+    <div id="update-banner">ESTA É A VERSÃO 3.2 ATUALIZADA - REVEJA SEU CACHE (CTRL+F5)</div>
     <canvas id="gameCanvas"></canvas>
 
     <div class="hud-overlay">
-        <div class="stat-badge">DINHEIRO: <span id="cash-count" style="color:var(--caution-yellow)">0</span></div>
-        <div class="stat-badge" style="border-left-color: var(--f1-red);">
-            DURABILIDADE
-            <div class="health-container">
-                <div id="health-fill"></div>
-            </div>
+        <div class="stat-badge">SALDO: <span id="cash-txt" style="color:var(--caution-yellow)">$0</span></div>
+        <div class="stat-badge">DURABILIDADE
+            <div class="durability-bar"><div id="hp-fill"></div></div>
         </div>
-        <div class="stat-badge">META: <span id="dist-count">0</span>/1000m</div>
+        <div class="stat-badge">META: <span id="dist-txt">0</span>m</div>
     </div>
 
-    <div id="speedometer">
-        <div class="speed-gauge">
-            <div id="speed-val">0</div>
-            <div class="kmh">KM/H</div>
-        </div>
+    <div id="speed-gauge">
+        <div id="speed-num">0</div>
+        <div class="unit">KM/H</div>
     </div>
 
-    <div id="map-container">
-        <div id="p-pos"></div>
+    <div id="track-map"><div id="p-marker"></div></div>
+
+    <!-- SCREENS -->
+    <div id="screen-main" class="ui-screen">
+        <h1 style="font-size: 3rem; margin-bottom: 20px; color: var(--f1-red)">OWN THE ROAD 3.2</h1>
+        <p style="color: #888; margin-bottom: 30px;">Top-Down atualizado: Ré, Velocímetro e Durabilidade.</p>
+        <button class="btn-action" id="start-race">CORRER AGORA</button>
+        <button class="btn-action" style="background:#444" id="open-shop">GARAGEM</button>
     </div>
 
-    <div id="reward-toast">MISSAO COMPLETA: +$500</div>
-
-    <!-- START -->
-    <div id="screen-start" class="screen-ui">
-        <h1 class="title-glow">OWN THE ROAD 3.0</h1>
-        <p style="color: #888; margin-bottom: 30px; max-width: 400px;">
-            Agora com durabilidade, sistema de ré e perguntas a cada 10 segundos! Compre o F1 definitivo.
-        </p>
-        <button class="btn-style" id="btn-play">INICIAR</button>
-        <button class="btn-style" style="background:#444" id="btn-garage">GARAGEM</button>
+    <div id="screen-garage" class="ui-screen hide">
+        <h1 style="color: var(--safety-cyan)">GARAGEM</h1>
+        <div id="shop-list" style="width:100%; max-height: 60vh; overflow-y:auto; margin: 20px 0;"></div>
+        <button class="btn-action" id="back-home">VOLTAR</button>
     </div>
 
-    <!-- GARAGE -->
-    <div id="screen-garage" class="screen-ui hide">
-        <h1 class="title-glow">GARAGEM</h1>
-        <div id="garage-grid" style="width:100%; max-height: 50vh; overflow-y:auto; margin-bottom:20px;"></div>
-        <button class="btn-style" id="btn-exit-garage">VOLTAR</button>
-    </div>
-
-    <!-- QUIZ -->
-    <div id="screen-quiz" class="screen-ui hide">
-        <div id="quiz-box">
-            <h2 id="quiz-q" style="margin-bottom: 20px;">PERGUNTA?</h2>
-            <div id="quiz-opts"></div>
+    <div id="screen-quiz" class="ui-screen hide">
+        <div style="background:#111; border: 2px solid var(--safety-cyan); padding: 30px; border-radius: 15px; width: 90%;">
+            <h2 id="q-text" style="margin-bottom: 20px;">Pergunta?</h2>
+            <div id="q-options"></div>
         </div>
     </div>
 
-    <!-- GAME OVER -->
-    <div id="screen-over" class="screen-ui hide">
-        <h1 id="over-t" class="title-glow">FIM DA LINHA</h1>
-        <p id="over-res" style="margin-bottom: 30px;"></p>
-        <button class="btn-style" id="btn-restart">RECOMECAR</button>
-        <button class="btn-style" style="background:#555" id="btn-over-garage">GARAGEM</button>
+    <div id="screen-end" class="ui-screen hide">
+        <h1 id="end-title">FIM DE JOGO</h1>
+        <p id="end-desc" style="margin: 20px 0; color: #aaa;"></p>
+        <button class="btn-action" id="play-again">REPETIR</button>
     </div>
 </div>
 
@@ -226,265 +162,199 @@
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
-    // VEHICLE DATA
-    const VEHICLES = [
-        { id: 0, n: "Compacto", p: 0, s: 6, a: 0.12, c: "#999", type: 'hatch' },
-        { id: 1, n: "Sedan Premium", p: 200, s: 9, a: 0.18, c: "#336", type: 'sedan' },
-        { id: 2, n: "SUV Adventure", p: 500, s: 12, a: 0.22, c: "#262", type: 'suv' },
-        { id: 3, n: "Esportivo GT", p: 1200, s: 16, a: 0.35, c: "#a33", type: 'sport' },
-        { id: 4, n: "F1 ULTIMATE", p: 3000, s: 24, a: 0.65, c: "#E10600", type: 'f1' }
+    // CAR DATA
+    const CARS = [
+        { id: 0, n: "Compacto", p: 0, s: 6, a: 0.1, c: "#999", type: 'hatch' },
+        { id: 1, n: "Sedan Premium", p: 300, s: 9, a: 0.15, c: "#44a", type: 'sedan' },
+        { id: 2, n: "SUV de Luxo", p: 700, s: 12, a: 0.2, c: "#262", type: 'suv' },
+        { id: 3, n: "Super Carro", p: 1500, s: 16, a: 0.3, c: "#fa0", type: 'sport' },
+        { id: 4, n: "F1 MONOPOSTO", p: 4000, s: 23, a: 0.6, c: "#e10600", type: 'f1' }
     ];
 
-    const POOL = [
-        { q: "Qual a distância de segurança ao ciclista?", a: "1,5 metro", o: ["0,5m", "2,0m", "5,0m"] },
-        { q: "Luz amarela no semáforo significa?", a: "Atenção, pare se possível", o: ["Acelere", "Passe rápido", "Ligue o pisca"] },
-        { q: "Beber e dirigir é permitido?", a: "Nunca (Lei Seca)", o: ["Só um copo", "Só se for cerveja", "Se não estiver tonto"] },
-        { q: "Uso de celular dirigindo é:", a: "Infração Gravíssima", o: ["Permitido no sinal", "OK se for viva-voz", "Só para olhar GPS"] },
-        { q: "Chuva forte exige:", a: "Reduzir e dobrar distância", o: ["Ligar o farol alto", "Aumentar velocidade", "Parar na pista"] },
-        { q: "Velocidade em trânsito rápido sem sinalização?", a: "80km/h", o: ["60km/h", "100km/h", "40km/h"] },
-        { q: "O cinto de segurança é obrigatório:", a: "Todos os passageiros", o: ["Só no banco frente", "Só em rodovias", "Não em baixa velocidade"] },
-        { q: "O que significa 'Direção Defensiva'?", a: "Prever perigos antes deles ocorrerem", o: ["Correr para fugir do trânsito", "Saber se defender de assaltos", "Usar o carro para proteção"] }
+    const QUIZ = [
+        { q: "Qual a distância de segurança ao ciclista?", a: "1,5 metro", o: ["0,5m", "2,0m", "Deixar passar"] },
+        { q: "O farol baixo em rodovias é:", a: "Obrigatório", o: ["Opcional dia", "Proibido", "Só à noite"] },
+        { q: "Luz amarela serve para:", a: "Parar se possível", o: ["Acelerar", "Ligar alerta", "Seguir rápido"] },
+        { q: "Dirigir com sono é:", a: "Tão perigoso quanto álcool", o: ["Normal", "Só perigoso acima de 100km/h", "Resolvido com café"] }
     ];
 
-    let game = {
-        cash: parseInt(localStorage.getItem('v3_c')) || 0,
-        owned: JSON.parse(localStorage.getItem('v3_o')) || [0],
-        sel: parseInt(localStorage.getItem('v3_s')) || 0,
-        hp: 100, d: 0, target: 10000, v: 0, active: false, px: 300, roadY: 0,
-        obs: [], qTimer: 0, used: [], lt: 0
+    let state = {
+        money: parseInt(localStorage.getItem('otr32_m')) || 0,
+        cars: JSON.parse(localStorage.getItem('otr32_c')) || [0],
+        sel: parseInt(localStorage.getItem('otr32_s')) || 0,
+        hp: 100, dist: 0, v: 0, active: false, px: 300, offset: 0,
+        obs: [], qTimer: 0, used: [], lastTime: 0
     };
 
     const keys = {};
     window.onkeydown = e => keys[e.key] = true;
     window.onkeyup = e => keys[e.key] = false;
 
-    function refreshHUD() {
-        document.getElementById('cash-count').innerText = game.cash;
-        document.getElementById('dist-count').innerText = Math.floor(game.d / 10);
-        document.getElementById('health-fill').style.width = game.hp + '%';
-        if(game.hp < 40) document.getElementById('health-fill').style.background = '#ff0000';
-        else document.getElementById('health-fill').style.background = '#00ff00';
-        document.getElementById('speed-val').innerText = Math.abs(Math.floor(game.v * 10));
-        const mapP = Math.max(0, Math.min(290, (game.d / game.target) * 290));
-        document.getElementById('p-pos').style.bottom = mapP + 'px';
-    }
-
-    function sync() {
-        localStorage.setItem('v3_c', game.cash);
-        localStorage.setItem('v3_o', JSON.stringify(game.owned));
-        localStorage.setItem('v3_s', game.sel);
-    }
-
-    function drawDetailedCar(ctx, x, y, color, type, isPlayer = true) {
+    function drawCar(ctx, x, y, color, type, isPlayer) {
         ctx.save();
         ctx.translate(x, y);
-        
-        // Base Body
         ctx.fillStyle = color;
-        ctx.shadowBlur = isPlayer ? 10 : 0;
-        ctx.shadowColor = color;
         
-        switch(type) {
-            case 'f1':
-                // Nose
-                ctx.beginPath(); ctx.roundRect(-10, -50, 20, 40, 5); ctx.fill();
-                // Main body
-                ctx.beginPath(); ctx.roundRect(-22, -15, 44, 50, 10); ctx.fill();
-                // Wings
-                ctx.fillStyle = '#111';
-                ctx.fillRect(-35, -45, 70, 15); // Front wing
-                ctx.fillRect(-35, 30, 70, 15);  // Rear wing
-                // Suspension
-                ctx.strokeStyle = '#222'; ctx.lineWidth = 4;
-                ctx.strokeRect(-30, -30, 60, 5);
-                ctx.strokeRect(-30, 20, 60, 5);
-                break;
-            case 'suv':
-                ctx.beginPath(); ctx.roundRect(-25, -45, 50, 90, 8); ctx.fill();
-                ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(-20, -35, 40, 20); // roof rack
-                break;
-            case 'sport':
-                ctx.beginPath(); ctx.roundRect(-22, -45, 44, 90, 20); ctx.fill();
-                ctx.fillStyle = '#222'; ctx.fillRect(-30, 35, 60, 10); // spoiler
-                break;
-            default: // Sedan / Hatch
-                ctx.beginPath(); ctx.roundRect(-22, -45, 44, 90, 12); ctx.fill();
-        }
-
-        // Details common to all
-        if (type !== 'f1') {
-            // Windshields
-            ctx.fillStyle = 'rgba(255,255,255,0.2)';
-            ctx.beginPath(); ctx.roundRect(-18, -30, 36, 15, 2); ctx.fill(); // front
-            ctx.beginPath(); ctx.roundRect(-18, 25, 36, 10, 2); ctx.fill(); // back
-            // Mirrors
-            ctx.fillStyle = color;
-            ctx.fillRect(-28, -25, 6, 8); ctx.fillRect(22, -25, 6, 8);
-        }
-
-        // Wheels
-        ctx.fillStyle = '#0a0a0a';
         if (type === 'f1') {
-            ctx.fillRect(-35, -40, 15, 20); ctx.fillRect(20, -40, 15, 20);
-            ctx.fillRect(-35, 15, 15, 25); ctx.fillRect(20, 15, 15, 25);
+            ctx.fillRect(-10, -45, 20, 40); // nose
+            ctx.fillRect(-22, -10, 44, 45); // body
+            ctx.fillStyle = '#000';
+            ctx.fillRect(-35, -40, 70, 12); // f-wing
+            ctx.fillRect(-35, 25, 70, 15);  // r-wing
+            // Wheels
+            ctx.fillRect(-32, -35, 12, 18); ctx.fillRect(20, -35, 12, 18);
+            ctx.fillRect(-32, 15, 12, 22); ctx.fillRect(20, 15, 12, 22);
         } else {
+            ctx.beginPath();
+            ctx.roundRect(-22, -45, 44, 90, 10);
+            ctx.fill();
+            // Glass
+            ctx.fillStyle = 'rgba(255,255,255,0.2)';
+            ctx.fillRect(-18, -25, 36, 15);
+            ctx.fillRect(-18, 25, 36, 10);
+            // Wheels
+            ctx.fillStyle = '#000';
             ctx.fillRect(-28, -35, 8, 18); ctx.fillRect(20, -35, 8, 18);
             ctx.fillRect(-28, 25, 8, 20); ctx.fillRect(20, 25, 8, 20);
         }
-        
         ctx.restore();
     }
 
-    function popQuiz() {
-        if (!game.active) return;
-        let p = POOL.filter((_, i) => !game.used.includes(i));
-        if (p.length === 0) { game.used = []; p = POOL; }
-        const idx = POOL.indexOf(p[Math.floor(Math.random() * p.length)]);
-        game.used.push(idx);
-        const qD = POOL[idx];
-
-        document.getElementById('quiz-q').innerText = qD.q;
-        const oG = document.getElementById('quiz-opts');
-        oG.innerHTML = '';
-        [qD.a, ...qD.o].sort(() => Math.random() - 0.5).forEach(opt => {
-            const b = document.createElement('button');
-            b.className = 'opt-btn'; b.innerText = opt;
-            b.onclick = () => {
-                if (opt === qD.a) { game.cash += 50; sync(); }
-                else { game.v = 0; game.hp = Math.max(0, game.hp - 10); }
-                document.getElementById('screen-quiz').classList.add('hide');
-                game.active = true; game.qTimer = 0;
-            };
-            oG.appendChild(b);
-        });
-        document.getElementById('screen-quiz').classList.remove('hide');
-        game.active = false;
+    function sync() {
+        localStorage.setItem('otr32_m', state.money);
+        localStorage.setItem('otr32_c', JSON.stringify(state.cars));
+        localStorage.setItem('otr32_s', state.sel);
+        document.getElementById('cash-txt').innerText = '$' + state.money;
     }
 
-    function setup() {
-        game.hp = 100; game.d = 0; game.v = 0; game.px = 300; game.qTimer = 0;
-        game.obs = [];
+    function initRace() {
+        state.hp = 100; state.dist = 0; state.v = 0; state.px = 300; state.qTimer = 0;
+        state.obs = [];
         for(let i=0; i<40; i++) {
-            game.obs.push({
+            state.obs.push({
                 x: 180 + Math.random() * 240,
-                y: -(i * 600) - 1000,
-                w: 50, h: 90, color: ['#444','#224','#422','#44a'][i%4]
+                y: -(i * 700) - 1000,
+                c: ['#555','#336','#633'][i%3]
             });
         }
+        state.active = true;
+        state.lastTime = performance.now();
     }
 
-    function loop(now) {
-        if (game.active) {
-            const dt = (now - game.lt) / 1000;
-            game.lt = now;
-            const car = VEHICLES[game.sel];
+    function showQuiz() {
+        const q = QUIZ[Math.floor(Math.random() * QUIZ.length)];
+        document.getElementById('q-text').innerText = q.q;
+        const opts = document.getElementById('q-options');
+        opts.innerHTML = '';
+        [q.a, ...q.o].sort(() => Math.random() - 0.5).forEach(opt => {
+            const b = document.createElement('button');
+            b.className = 'btn-action'; style = 'width:100%';
+            b.innerText = opt;
+            b.onclick = () => {
+                if (opt === q.a) { state.money += 100; sync(); }
+                else { state.hp -= 20; }
+                document.getElementById('screen-quiz').classList.add('hide');
+                state.active = true; state.qTimer = 0;
+            };
+            opts.appendChild(b);
+        });
+        document.getElementById('screen-quiz').classList.remove('hide');
+        state.active = false;
+    }
 
-            // Controls (Forward & Reverse)
-            if (keys['w'] || keys['ArrowUp']) game.v += car.a;
-            else if (keys['s'] || keys['ArrowDown']) game.v -= car.a; // Reverse system
-            else game.v *= 0.98;
+    function loop(t) {
+        if (state.active) {
+            const dt = (t - state.lastTime) / 1000;
+            state.lastTime = t;
+            const car = CARS[state.sel];
 
-            if (keys['a'] || keys['ArrowLeft']) game.px -= 6;
-            if (keys['d'] || keys['ArrowRight']) game.px += 6;
+            if (keys['w'] || keys['ArrowUp']) state.v += car.a;
+            else if (keys['s'] || keys['ArrowDown']) state.v -= car.a; // REVERSE
+            else state.v *= 0.98;
 
-            // Clamps
-            game.v = Math.max(-car.s/2, Math.min(game.v, car.s)); // Max reverse is half max speed
-            game.px = Math.max(160, Math.min(440, game.px));
+            if (keys['a'] || keys['ArrowLeft']) state.px -= 6;
+            if (keys['d'] || keys['ArrowRight']) state.px += 6;
 
-            game.d += game.v;
-            game.roadY = (game.roadY + game.v) % 120;
+            state.v = Math.max(-car.s/2, Math.min(state.v, car.s));
+            state.px = Math.max(160, Math.min(440, state.px));
+            state.dist += state.v;
+            state.offset = (state.offset + state.v) % 100;
 
-            game.qTimer += dt;
-            if (game.qTimer >= 10) popQuiz(); // 10 seconds per user request
+            state.qTimer += dt;
+            if (state.qTimer >= 10) showQuiz();
 
-            game.obs.forEach(o => {
-                o.y += game.v;
-                if (Math.abs(o.x - game.px) < 45 && Math.abs(o.y - (canvas.height - 180)) < 85) {
-                    game.hp -= 0.5; // Durability loss on contact
-                    game.v *= 0.95;
+            state.obs.forEach(o => {
+                o.y += state.v;
+                if (Math.abs(o.x - state.px) < 45 && Math.abs(o.y - (canvas.height - 180)) < 80) {
+                    state.hp -= 0.5;
+                    state.v *= 0.95;
                 }
             });
 
-            if (game.hp <= 0) {
-                game.active = false;
-                document.getElementById('over-res').innerText = "Veículo destruído! Dirija com mais prudência.";
-                document.getElementById('screen-over').classList.remove('hide');
+            if (state.hp <= 0) {
+                state.active = false;
+                document.getElementById('end-title').innerText = "FALHA NA MISSÃO";
+                document.getElementById('end-desc').innerText = "Veículo danificado. Seja mais prudente!";
+                document.getElementById('screen-end').classList.remove('hide');
             }
 
-            if (game.d >= game.target) {
-                game.active = false; game.cash += 500; sync();
-                document.getElementById('reward-toast').style.display = 'block';
-                setTimeout(() => {
-                    document.getElementById('reward-toast').style.display = 'none';
-                    document.getElementById('over-t').innerText = "VITORIA!";
-                    document.getElementById('over-res').innerText = "Excelente! Você Ganhou $500.";
-                    document.getElementById('screen-over').classList.remove('hide');
-                }, 2000);
+            if (state.dist >= 10000) {
+                state.active = false; state.money += 500; sync();
+                document.getElementById('end-title').innerText = "VITÓRIA!";
+                document.getElementById('end-desc').innerText = "Você chegou com segurança. Recompensa: $500";
+                document.getElementById('screen-end').classList.remove('hide');
             }
-            refreshHUD();
+
+            document.getElementById('hp-fill').style.width = state.hp + '%';
+            document.getElementById('dist-txt').innerText = Math.floor(state.dist / 10);
+            document.getElementById('speed-num').innerText = Math.abs(Math.floor(state.v * 10));
+            document.getElementById('p-marker').style.bottom = Math.min(295, (state.dist/10000)*295) + 'px';
         }
 
         // RENDER
-        ctx.fillStyle = '#3a6631'; ctx.fillRect(0,0,canvas.width,canvas.height); // Grass
+        ctx.fillStyle = '#2d5a27'; ctx.fillRect(0,0,canvas.width,canvas.height); // Grass
         ctx.fillStyle = '#222'; ctx.fillRect(150, 0, 300, canvas.height); // Road
-        ctx.fillStyle = '#fff'; ctx.fillRect(150,0,8,canvas.height); ctx.fillRect(442,0,8,canvas.height);
+        ctx.fillStyle = '#fff'; ctx.fillRect(150, 0, 5, canvas.height); ctx.fillRect(445, 0, 5, canvas.height);
         
-        ctx.setLineDash([40,40]); ctx.strokeStyle='rgba(255,255,255,0.5)'; ctx.lineWidth=4;
-        ctx.beginPath(); ctx.moveTo(300, -120 + game.roadY); ctx.lineTo(300, canvas.height+120+game.roadY);
-        ctx.stroke(); ctx.setLineDash([]);
+        ctx.setLineDash([40,40]); ctx.strokeStyle='rgba(255,255,255,0.4)'; ctx.lineWidth=4;
+        ctx.beginPath(); ctx.moveTo(300, -100 + state.offset); ctx.lineTo(300, canvas.height + 100 + state.offset); ctx.stroke(); ctx.setLineDash([]);
 
-        // NPC CARS (Obstacles as cars)
-        game.obs.forEach(o => {
-            drawDetailedCar(ctx, o.x, o.y + o.h/2, o.color, 'sedan', false);
-        });
+        state.obs.forEach(o => drawCar(ctx, o.x, o.y + 45, o.c, 'sedan', false));
+        drawCar(ctx, state.px, canvas.height - 180, CARS[state.sel].c, CARS[state.sel].type, true);
 
-        // PLAYER CAR
-        const selV = VEHICLES[game.sel];
-        drawDetailedCar(ctx, game.px, canvas.height - 180, selV.c, selV.type, true);
-
-        requestAnimationFrame((t) => {
-            if(!game.active) game.lt = t;
-            loop(t);
-        });
+        requestAnimationFrame(loop);
     }
 
-    // UI BUTTONS
-    document.getElementById('btn-play').onclick = () => {
-        setup(); game.active = true; game.lt = performance.now();
-        document.getElementById('screen-start').classList.add('hide');
+    // BUTTONS
+    document.getElementById('start-race').onclick = () => {
+        document.getElementById('screen-main').classList.add('hide'); initRace();
     };
-    document.getElementById('btn-garage').onclick = () => {
-        const g = document.getElementById('garage-grid'); g.innerHTML = '';
-        VEHICLES.forEach(v => {
-            const has = game.owned.includes(v.id); const isS = game.sel === v.id;
-            const c = document.createElement('div');
-            c.className = `item-card ${isS ? 'active' : ''}`;
-            c.innerHTML = `<div><b>${v.n}</b><br><span style="color:var(--caution-yellow)">${has ? 'ADQUIRIDO' : '$'+v.p}</span></div><button class="btn-style" style="margin:0; padding:10px 20px;">${has ? (isS ? 'USANDO' : 'EQUIPAR') : 'COMPRAR'}</button>`;
-            c.querySelector('button').onclick = () => {
-                if(!has && game.cash >= v.p) { game.cash -= v.p; game.owned.push(v.id); sync(); }
-                else if(has) game.sel = v.id;
-                sync(); document.getElementById('btn-garage').click();
+    document.getElementById('open-shop').onclick = () => {
+        const list = document.getElementById('shop-list'); list.innerHTML = '';
+        CARS.forEach(v => {
+            const has = state.cars.includes(v.id); const sel = state.sel === v.id;
+            const div = document.createElement('div');
+            div.style = "background:#111; padding:15px; border-radius:10px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; border: 1px solid "+(sel?'var(--safety-cyan)':'#333');
+            div.innerHTML = `<div><b>${v.n}</b><br><small style="color:var(--caution-yellow)">${has?'COLECIONADO':'$'+v.p}</small></div><button class="btn-action" style="margin:0; padding:8px 15px;">${has?(sel?'EQUIPADO':'ESCOLHER'):'COMPRAR'}</button>`;
+            div.querySelector('button').onclick = () => {
+                if(!has && state.money >= v.p) { state.money -= v.p; state.cars.push(v.id); sync(); document.getElementById('open-shop').click(); }
+                else if(has) { state.sel = v.id; sync(); document.getElementById('open-shop').click(); }
             };
-            g.appendChild(c);
+            list.appendChild(div);
         });
         document.getElementById('screen-garage').classList.remove('hide');
     };
-    document.getElementById('btn-exit-garage').onclick = () => document.getElementById('screen-garage').classList.add('hide');
-    document.getElementById('btn-restart').onclick = () => {
-        setup(); game.active = true; game.lt = performance.now();
-        document.getElementById('screen-over').classList.add('hide');
-    };
-    document.getElementById('btn-over-garage').onclick = () => {
-        document.getElementById('screen-over').classList.add('hide');
-        document.getElementById('btn-garage').click();
+    document.getElementById('back-home').onclick = () => document.getElementById('screen-garage').classList.add('hide');
+    document.getElementById('play-again').onclick = () => {
+        document.getElementById('screen-end').classList.add('hide'); initRace();
     };
 
-    function boot() {
+    function start() {
         canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
-        refreshHUD(); loop(performance.now());
+        sync(); loop(performance.now());
     }
-    window.onresize = boot;
-    boot();
+    window.onresize = start;
+    start();
 
 </script>
 </body>
