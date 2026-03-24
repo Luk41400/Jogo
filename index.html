@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Own the Road v3.9 | DUAL MUSIC UPDATE</title>
+    <title>Own the Road v3.10 | PRO PROGRESSION UPDATE</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@900&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -58,6 +58,10 @@
         /* MUSIC INFO */
         #music-info { position: absolute; bottom: 120px; left: 20px; font-size: 0.7rem; color: #888; font-weight: 700; text-transform: uppercase; z-index: 10; opacity: 0; transition: 0.5s; }
 
+        /* START MESSAGE */
+        #start-msg { position: absolute; top: 50%; width: 100%; text-align: center; font-size: 1.5rem; color: var(--safety-cyan); font-weight: 900; z-index: 10; animation: blink 0.8s infinite; display: none; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
         #music-frame { position: absolute; top: -100px; left: -100px; width: 1px; height: 1px; visibility: hidden; pointer-events: none; }
 
     </style>
@@ -67,6 +71,8 @@
 <div id="music-frame"></div>
 
 <div id="game-area">
+    <div id="start-msg">ACELERE PARA COMEÇAR!</div>
+
     <canvas id="gameCanvas"></canvas>
 
     <div class="hud">
@@ -82,13 +88,12 @@
     </div>
 
     <div id="music-info">TRACK: Back in Black</div>
-
     <div id="speedo"><div id="sp-num">0</div><div style="font-size:0.5rem">KM/H</div></div>
 
     <!-- MAIN MENU -->
     <div id="scr-menu" class="screen">
         <h1 style="font-size:3rem; color:var(--f1-red); margin-bottom:10px; text-shadow: 0 0 15px var(--f1-red);">OWN THE ROAD</h1>
-        <p style="color:#666; margin-bottom:30px; font-weight:700;">DUAL ROCK EDITION</p>
+        <p style="color:#666; margin-bottom:30px; font-weight:700;">PROGRESSE COM SEGURANÇA</p>
         <button class="btn" id="go-race">INICIAR CORRIDA</button>
         <button class="btn" style="background:#444" id="go-garage">GARAGEM</button>
     </div>
@@ -96,7 +101,8 @@
     <!-- GARAGE -->
     <div id="scr-garage" class="screen hide">
         <h1 style="color:var(--safety-cyan)">GARAGEM</h1>
-        <div id="car-list" style="width:100%; max-height:60vh; overflow-y:auto; margin:20px 0;"></div>
+        <p style="font-size: 0.7rem; color: #888; margin-bottom: 15px;">É necessário ter o veículo anterior para comprar o próximo.</p>
+        <div id="car-list" style="width:100%; max-height:60vh; overflow-y:auto; margin:10px 0;"></div>
         <button class="btn" id="exit-garage">VOLTAR</button>
     </div>
 
@@ -120,7 +126,8 @@
     <!-- PAUSE OVERLAY -->
     <div id="scr-pause" class="screen hide" style="background:rgba(0,0,0,0.6)">
         <h1 style="color:var(--safety-cyan); font-size:3rem;">PAUSADO</h1>
-        <button class="btn" id="resume-btn" style="background: #333">CONTINUAR JOGO</button>
+        <button class="btn" id="resume-btn" style="background: #333">CONTINUAR</button>
+        <button class="btn" id="pause-restart">REINICIAR CORRIDA</button>
     </div>
 </div>
 
@@ -128,72 +135,55 @@
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
-    // MUSIC CONFIG
     const PLAYLIST = [
         { id: 'pAgnJDJN4VA', name: 'AC/DC - Back in Black' },
         { id: 'egMWlD3fLJ8', name: 'Steppenwolf - Born to be Wild' }
     ];
-    let curTrack = 0;
-    let player;
-    let isMuted = false;
+    let curTrack = 0; let player; let isMuted = false;
 
-    // YT API
     const tag = document.createElement('script');
     tag.src = "https://www.youtube.com/iframe_api";
     document.body.appendChild(tag);
 
     function onYouTubeIframeAPIReady() {
         player = new YT.Player('music-frame', {
-            height: '1', width: '1',
-            videoId: PLAYLIST[curTrack].id,
+            height: '1', width: '1', videoId: PLAYLIST[curTrack].id,
             playerVars: { 'autoplay': 0, 'loop': 1, 'playlist': PLAYLIST[curTrack].id }
         });
-    }
-
-    function switchMusic() {
-        curTrack = (curTrack + 1) % PLAYLIST.length;
-        if(player) {
-            player.loadVideoById(PLAYLIST[curTrack].id);
-            if(isMuted) player.mute(); else player.unMute();
-        }
-        const info = document.getElementById('music-info');
-        info.innerText = "TRACK: " + PLAYLIST[curTrack].name;
-        info.style.opacity = 1;
-        setTimeout(() => info.style.opacity = 0, 3000);
     }
 
     // CAR MODELS
     const CARS = [
         { id: 0, n: "Hatch Pop", p: 0, s: 7, a: 0.12, c: "#999", t: 'hatch' },
-        { id: 1, n: "Sedan Premium", p: 400, s: 10, a: 0.2, c: "#33c", t: 'sedan' },
-        { id: 2, n: "SUV Adventure", p: 1000, s: 13, a: 0.25, c: "#262", t: 'suv' },
+        { id: 1, n: "Sedan Premium", p: 500, s: 10, a: 0.2, c: "#33c", t: 'sedan' },
+        { id: 2, n: "SUV Adventure", p: 1200, s: 13, a: 0.25, c: "#262", t: 'suv' },
         { id: 3, n: "Esportivo GT", p: 2500, s: 19, a: 0.45, c: "#e1a100", t: 'sport' },
         { id: 4, n: "F1 MONOPOSTO", p: 6000, s: 28, a: 0.8, c: "#e10600", t: 'f1' }
     ];
 
     const QUIZ_LIST = [
-        { q: "Qual a distância segura do ciclista?", a: "1,5 metro", o: ["0,5m", "10m", "Colado"] },
+        { q: "Qual a distância segura do ciclista?", a: "1,5 metro", o: ["0,5m", "Perto", "10 metros"] },
         { q: "Sinal Amarelo significa:", a: "Parar se puder", o: ["Acelerar", "Buzinar", "Passar rápido"] },
         { q: "Álcool e Direção?", a: "Jamais!", o: ["Pode 1 taça", "Ok fins de semana", "Só rodovia"] }
     ];
 
     let game = {
-        m: parseInt(localStorage.getItem('otr_39_m')) || 0,
-        o: JSON.parse(localStorage.getItem('otr_39_o')) || [0],
-        sel: parseInt(localStorage.getItem('otr_39_s')) || 0,
-        hp: 100, d: 0, v: 0, act: false, px: 300, offset: 0, obs: [], qClock: 0, lt: 0, paused: false
+        m: parseInt(localStorage.getItem('otr_310_m')) || 0,
+        o: JSON.parse(localStorage.getItem('otr_310_o')) || [0],
+        sel: parseInt(localStorage.getItem('otr_310_s')) || 0,
+        hp: 100, d: 0, v: 0, act: false, started: false, px: 300, offset: 0, obs: [], qClock: 0, lt: 0, paused: false
     };
 
     const keys = {}; window.onkeydown = e => keys[e.key] = true; window.onkeyup = e => keys[e.key] = false;
 
-    function save() { localStorage.setItem('otr_39_m', game.m); localStorage.setItem('otr_39_o', JSON.stringify(game.o)); localStorage.setItem('otr_39_s', game.sel); }
+    function save() { localStorage.setItem('otr_310_m', game.m); localStorage.setItem('otr_310_o', JSON.stringify(game.o)); localStorage.setItem('otr_310_s', game.sel); }
     function syncHUD() { 
         document.getElementById('m-val').innerText = '$' + game.m;
         document.getElementById('hp-bar').style.width = game.hp + '%';
         document.getElementById('sp-num').innerText = Math.abs(Math.floor(game.v * 12));
     }
 
-    function drawCard(ctx, x, y, color, type) {
+    function drawV(ctx, x, y, color, type) {
         ctx.save(); ctx.translate(x, y); ctx.fillStyle = color;
         if(type === 'f1') {
             ctx.beginPath(); ctx.roundRect(-10, -50, 20, 35, 3); ctx.fill();
@@ -207,7 +197,7 @@
         ctx.restore();
     }
 
-    let quizInterval;
+    let qInterval;
     function popQuiz() {
         game.act = false;
         const q = QUIZ_LIST[Math.floor(Math.random()*QUIZ_LIST.length)];
@@ -217,48 +207,45 @@
         document.getElementById('q-txt').innerText = q.q;
         qBox.innerHTML = ''; card.style.background = "#000"; card.style.border = "2px solid var(--safety-cyan)";
         
-        let timeLeft = 10;
-        timerTxt.innerText = timeLeft;
+        let timeLeft = 10; timerTxt.innerText = timeLeft;
 
         const endQuiz = (isCorrect, btn) => {
-            clearInterval(quizInterval);
+            clearInterval(qInterval);
             if(isCorrect) {
-                card.style.background = "var(--correct-green)";
-                card.style.border = "2px solid var(--correct-green)";
+                card.style.background = "var(--correct-green)"; card.style.border = "2px solid var(--correct-green)";
                 if(btn) btn.style.background = "var(--correct-green)";
-                game.m += 200; save();
+                game.m += 150; save();
             } else {
-                card.style.background = "var(--wrong-red)";
-                card.style.border = "2px solid var(--wrong-red)";
+                card.style.background = "var(--wrong-red)"; card.style.border = "2px solid var(--wrong-red)";
                 if(btn) btn.style.background = "var(--wrong-red)";
                 game.hp = Math.max(0, game.hp - 30);
             }
-            setTimeout(() => {
-                document.getElementById('scr-quiz').classList.add('hide');
-                game.act = true; game.qClock = 0; syncHUD();
-            }, 1000);
+            setTimeout(() => { document.getElementById('scr-quiz').classList.add('hide'); game.act = true; game.qClock = 0; syncHUD(); }, 1000);
         };
 
-        quizInterval = setInterval(() => {
-            timeLeft--;
-            timerTxt.innerText = timeLeft;
-            if(timeLeft <= 0) endQuiz(false);
-        }, 1000);
-
+        qInterval = setInterval(() => { timeLeft--; timerTxt.innerText = timeLeft; if(timeLeft <= 0) endQuiz(false); }, 1000);
         [q.a, ...q.o].sort(()=>Math.random()-0.5).forEach(opt => {
-            const b = document.createElement('button'); b.className = 'btn'; b.innerText = opt;
-            b.style.width = "100%";
-            b.onclick = () => endQuiz(opt === q.a, b);
-            qBox.appendChild(b);
+            const b = document.createElement('button'); b.className = 'btn'; b.innerText = opt; b.style.width = "100%";
+            b.onclick = () => endQuiz(opt === q.a, b); qBox.appendChild(b);
         });
         document.getElementById('scr-quiz').classList.remove('hide');
+    }
+
+    function initRace() {
+        game.hp=100; game.d=0; game.v=0; game.px=300; game.qClock=0; game.started=false; game.obs=[];
+        for(let i=0; i<45; i++) game.obs.push({ x: 180 + Math.random()*240, y: -(i*850)-1500, c: '#444', t: 'sedan' });
+        document.getElementById('start-msg').style.display = 'block';
     }
 
     function loop(now) {
         if(game.act && !game.paused) {
             const dt = (now - game.lt)/1000; game.lt = now;
             const c = CARS[game.sel];
-            if(keys['w'] || keys['ArrowUp']) game.v += c.a;
+
+            if(keys['w'] || keys['ArrowUp']) { 
+                game.v += c.a; 
+                if(!game.started) { game.started = true; document.getElementById('start-msg').style.display = 'none'; }
+            }
             else if(keys['s'] || keys['ArrowDown']) game.v -= c.a;
             else game.v *= 0.98;
 
@@ -269,73 +256,70 @@
             game.px = Math.max(160, Math.min(440, game.px));
             game.d += game.v; game.offset = (game.offset + game.v)%120;
             
-            game.qClock += dt; if(game.qClock >= 10) popQuiz();
+            // Only count time if started
+            if(game.started) {
+                game.qClock += dt; if(game.qClock >= 10) popQuiz();
+            }
             
             game.obs.forEach(o => {
                 o.y += game.v;
                 if(Math.abs(o.x - game.px) < 45 && Math.abs(o.y - (canvas.height-180)) < 85) { game.hp -= 0.6; game.v *= 0.9; }
             });
 
-            if(game.hp <= 0) { 
-                game.act = false; document.getElementById('res-title').innerText = "FALHA";
-                document.getElementById('scr-res').classList.remove('hide');
-            }
-            if(game.d >= 10000) {
-                game.act = false; game.m += 500; save();
-                document.getElementById('res-title').innerText = "VITÓRIA";
-                document.getElementById('scr-res').classList.remove('hide');
-            }
+            if(game.hp <= 0) { game.act = false; document.getElementById('res-title').innerText = "VÉICULO DESTRUÍDO"; document.getElementById('scr-res').classList.remove('hide'); }
+            if(game.d >= 10000) { game.act = false; game.m += 500; save(); document.getElementById('res-title').innerText = "MISSÃO COMPLETA"; document.getElementById('scr-res').classList.remove('hide'); }
             syncHUD();
         } else { game.lt = now; }
 
-        ctx.fillStyle = '#1b4d0e'; ctx.fillRect(0,0,canvas.width,canvas.height); // Grass
+        ctx.fillStyle = '#2d5a27'; ctx.fillRect(0,0,canvas.width,canvas.height); // Grass
         ctx.fillStyle = '#222'; ctx.fillRect(150,0,300,canvas.height); // Road
         ctx.setLineDash([40,40]); ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.beginPath(); ctx.moveTo(300, -100+game.offset); ctx.lineTo(300, canvas.height+100+game.offset); ctx.stroke();
         
-        game.obs.forEach(o => drawCard(ctx, o.x, o.y, o.c, o.t));
-        drawCard(ctx, game.px, canvas.height-180, CARS[game.sel].c, CARS[game.sel].t);
+        game.obs.forEach(o => drawV(ctx, o.x, o.y, o.c, o.t));
+        drawV(ctx, game.px, canvas.height-180, CARS[game.sel].c, CARS[game.sel].t);
         requestAnimationFrame(loop);
     }
 
-    // BUTTON EVENTS
-    document.getElementById('mute-btn').onclick = () => {
-        isMuted = !isMuted;
-        if(player) isMuted ? player.mute() : player.unMute();
-        document.getElementById('mute-btn').innerText = isMuted ? "🔇" : "🔊";
-    };
+    // BUTTONS
+    document.getElementById('mute-btn').onclick = () => { isMuted = !isMuted; if(player) isMuted ? player.mute() : player.unMute(); document.getElementById('mute-btn').innerText = isMuted ? "🔇" : "🔊"; };
     document.getElementById('pause-btn').onclick = () => { game.paused = true; document.getElementById('scr-pause').classList.remove('hide'); };
     document.getElementById('resume-btn').onclick = () => { game.paused = false; document.getElementById('scr-pause').classList.add('hide'); };
-    document.getElementById('switch-music').onclick = () => switchMusic();
-
-    document.getElementById('go-race').onclick = () => {
-        if(player) player.playVideo();
-        document.getElementById('scr-menu').classList.add('hide');
-        game.hp=100; game.d=0; game.v=0; game.px=300; game.obs=[];
-        for(let i=0; i<40; i++) game.obs.push({ x: 180 + Math.random()*240, y: -(i*800)-1500, c: '#444', t: 'sedan' });
-        game.act = true; game.lt = performance.now();
+    document.getElementById('pause-restart').onclick = () => { game.paused = false; document.getElementById('scr-pause').classList.add('hide'); initRace(); };
+    document.getElementById('switch-music').onclick = () => {
+        curTrack = (curTrack + 1) % PLAYLIST.length; player.loadVideoById(PLAYLIST[curTrack].id);
+        const info = document.getElementById('music-info'); info.innerText = "TRACK: " + PLAYLIST[curTrack].name; info.style.opacity = 1; setTimeout(() => info.style.opacity = 0, 3000);
     };
+
+    document.getElementById('go-race').onclick = () => { if(player) player.playVideo(); document.getElementById('scr-menu').classList.add('hide'); initRace(); game.act = true; game.lt = performance.now(); };
     document.getElementById('go-garage').onclick = () => {
         const list = document.getElementById('car-list'); list.innerHTML = '';
-        CARS.forEach(v => {
-            const has = game.o.includes(v.id); const s = game.sel === v.id;
+        CARS.forEach((v, index) => {
+            const has = game.o.includes(v.id); const sel = game.sel === v.id;
+            const prevOwned = index === 0 || game.o.includes(CARS[index - 1].id);
             const card = document.createElement('div');
-            card.style = "background:#000; padding:12px; margin-bottom:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; border:1px solid "+(s?'var(--safety-cyan)':'#333');
-            card.innerHTML = `<div><b>${v.n}</b><br><small>${has?'COLECIONADO':'$'+v.p}</small></div><button class="btn" style="margin:0; padding:6px 12px; font-size:0.8rem">${has?(s?'EQUIPADO':'ESCOLHER'):'COMPRAR'}</button>`;
-            card.querySelector('button').onclick = () => {
-                if(!has && game.m >= v.p) { game.m -= v.p; game.o.push(v.id); save(); document.getElementById('go-garage').click(); }
-                else if(has) { game.sel = v.id; save(); document.getElementById('go-garage').click(); }
-            };
+            card.style = "background:#000; padding:12px; margin-bottom:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; border:1px solid "+(sel?'var(--safety-cyan)':'#333');
+            
+            let btnTxt = has ? (sel ? 'EQUIPADO' : 'ESCOLHER') : (prevOwned ? 'COMPRAR' : 'BLOQUEADO');
+            let btnStyle = (!has && !prevOwned) ? "background:#222; color:#555; cursor:default;" : "";
+
+            card.innerHTML = `<div><b>${v.n}</b><br><small>${has?'ADQUIRIDO':'$'+v.p}</small></div><button class="btn" style="margin:0; padding:6px 12px; font-size:0.8rem; ${btnStyle}">${btnTxt}</button>`;
+            
+            if(has || prevOwned) {
+                card.querySelector('button').onclick = () => {
+                    if(!has && game.m >= v.p) { game.m -= v.p; game.o.push(v.id); save(); document.getElementById('go-garage').click(); }
+                    else if(has) { game.sel = v.id; save(); document.getElementById('go-garage').click(); }
+                };
+            }
             list.appendChild(card);
         });
         document.getElementById('scr-garage').classList.remove('hide');
     };
     document.getElementById('exit-garage').onclick = () => document.getElementById('scr-garage').classList.add('hide');
-    document.getElementById('retry').onclick = () => { document.getElementById('scr-res').classList.add('hide'); game.hp=100; game.d=0; game.v=0; game.px=300; game.act = true; game.lt = performance.now(); };
+    document.getElementById('retry').onclick = () => { document.getElementById('scr-res').classList.add('hide'); initRace(); game.act = true; game.lt = performance.now(); };
     document.getElementById('back-menu').onclick = () => { document.getElementById('scr-res').classList.add('hide'); document.getElementById('scr-menu').classList.remove('hide'); };
 
-    function start() { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; syncHUD(); loop(performance.now()); }
-    window.onresize = start;
-    start();
+    function boot() { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; syncHUD(); loop(performance.now()); }
+    window.onresize = boot; boot();
 
 </script>
 </body>
