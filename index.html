@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Own the Road v2.0 | TOP-DOWN RACER</title>
+    <title>Own the Road v3.0 | TOP-DOWN RACER</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
@@ -12,14 +12,14 @@
             --f1-red: #E10600;
             --safety-cyan: #00F2FF;
             --caution-yellow: #FFD700;
-            --dark-bg: #1A1A1A;
-            --glass: rgba(30, 30, 30, 0.95);
+            --dark-bg: #111;
+            --glass: rgba(20, 20, 20, 0.95);
             --neon: 0 0 20px rgba(0, 242, 255, 0.4);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
         body {
-            background-color: #111;
+            background-color: var(--dark-bg);
             color: white;
             font-family: 'Space Grotesk', sans-serif;
             overflow: hidden;
@@ -38,7 +38,7 @@
             background: #222;
             overflow: hidden;
             border: 5px solid #000;
-            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            box-shadow: 0 0 80px rgba(0,0,0,0.9);
         }
 
         canvas { display: block; width: 100%; height: 100%; }
@@ -66,9 +66,36 @@
             width: fit-content;
         }
 
-        .money-text { color: var(--caution-yellow); font-family: 'Outfit', sans-serif; font-size: 1.2rem; }
+        /* Durability Bar */
+        .health-container {
+            width: 150px;
+            height: 10px;
+            background: #333;
+            border-radius: 5px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        #health-fill { width: 100%; height: 100%; background: #00ff00; transition: 0.3s; }
 
-        /* MINI MAP */
+        /* Speedometer */
+        #speedometer {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            width: 120px;
+            height: 120px;
+            background: var(--glass);
+            border: 4px solid #333;
+            border-radius: 50%;
+            z-index: 10;
+        }
+        .speed-gauge {
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        #speed-val { font-size: 1.5rem; font-weight: 900; color: var(--safety-cyan); }
+        .kmh { font-size: 0.6rem; color: #888; letter-spacing: 1px; }
+
         #map-container {
             position: absolute;
             top: 150px;
@@ -77,120 +104,55 @@
             height: 300px;
             background: rgba(255,255,255,0.1);
             border-radius: 10px;
-            border: 2px solid rgba(255,255,255,0.2);
             z-index: 10;
         }
         #p-pos {
             position: absolute;
-            width: 25px;
-            height: 10px;
-            background: var(--f1-red);
-            left: -5px;
-            border-radius: 2px;
+            width: 25px; height: 10px; background: var(--f1-red); left: -5px; border-radius: 2px;
             box-shadow: 0 0 10px var(--f1-red);
         }
 
         /* SCREENS */
         .screen-ui {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(10, 10, 15, 0.98);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-            padding: 30px;
-            text-align: center;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 100; padding: 30px; text-align: center;
         }
 
         .hide { display: none !important; }
 
         .title-glow {
-            font-size: 3rem;
-            font-weight: 900;
+            font-size: 3rem; font-weight: 900; text-transform: uppercase; margin-bottom: 20px;
             background: linear-gradient(to bottom, #fff, #888);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 20px;
-            text-transform: uppercase;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
 
         .btn-style {
-            background: var(--f1-red);
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            font-size: 1.2rem;
-            font-weight: 900;
-            cursor: pointer;
-            border-radius: 4px;
-            margin: 10px;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            font-family: inherit;
+            background: var(--f1-red); color: white; border: none; padding: 15px 40px;
+            font-size: 1.2rem; font-weight: 900; cursor: pointer; border-radius: 4px;
+            margin: 10px; transition: 0.3s;
         }
-        .btn-style:hover { padding: 15px 50px; box-shadow: 0 0 30px rgba(225, 6, 0, 0.4); }
-
-        /* GARAGE */
-        #garage-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            width: 100%;
-            max-height: 50vh;
-            overflow-y: auto;
-            margin: 20px 0;
-            padding-right: 10px;
-        }
-        .item-card {
-            background: #1a1a1a;
-            border: 1px solid #333;
-            padding: 15px;
-            border-radius: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .item-card.active { border: 2px solid var(--safety-cyan); background: #222; }
+        .btn-style:hover { opacity: 0.8; transform: translateY(-2px); }
 
         /* QUIZ */
-        #quiz-box {
-            background: #000;
-            border: 2px solid var(--safety-cyan);
-            border-radius: 20px;
-            padding: 30px;
-            max-width: 90%;
+        #screen-quiz #quiz-box {
+            background: #000; border: 2px solid var(--safety-cyan); border-radius: 20px;
+            padding: 30px; max-width: 90%;
         }
         .opt-btn {
-            background: #111;
-            border: 1px solid #444;
-            color: white;
-            width: 100%;
-            padding: 15px;
-            margin: 5px 0;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: 0.2s;
+            background: #111; border: 1px solid #444; color: white; width: 100%;
+            padding: 15px; margin: 5px 0; border-radius: 8px; cursor: pointer;
+            font-size: 1rem; transition: 0.2s;
         }
-        .opt-btn:hover { border-color: var(--safety-cyan); transform: translateX(5px); }
+        .opt-btn:hover { border-color: var(--safety-cyan); background: #1a1a1a; }
 
-        /* POPUP */
+        /* REWARD */
         #reward-toast {
-            position: absolute;
-            bottom: 100px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--caution-yellow);
-            color: #000;
-            padding: 10px 30px;
-            border-radius: 50px;
-            font-weight: 900;
-            z-index: 60;
-            display: none;
+            position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%);
+            background: var(--caution-yellow); color: #000; padding: 10px 30px;
+            border-radius: 50px; font-weight: 900; z-index: 60; display: none;
             animation: slideUp 0.5s ease-out;
         }
         @keyframes slideUp { from { bottom: 50px; opacity: 0; } to { bottom: 100px; opacity: 1; } }
@@ -203,8 +165,21 @@
     <canvas id="gameCanvas"></canvas>
 
     <div class="hud-overlay">
-        <div class="stat-badge">CARTEIRA: <span class="money-text">$</span><span id="cash-count">0</span></div>
-        <div class="stat-badge" style="border-left-color: var(--f1-red);">META: <span id="dist-count">0</span>/1000m</div>
+        <div class="stat-badge">DINHEIRO: <span id="cash-count" style="color:var(--caution-yellow)">0</span></div>
+        <div class="stat-badge" style="border-left-color: var(--f1-red);">
+            DURABILIDADE
+            <div class="health-container">
+                <div id="health-fill"></div>
+            </div>
+        </div>
+        <div class="stat-badge">META: <span id="dist-count">0</span>/1000m</div>
+    </div>
+
+    <div id="speedometer">
+        <div class="speed-gauge">
+            <div id="speed-val">0</div>
+            <div class="kmh">KM/H</div>
+        </div>
     </div>
 
     <div id="map-container">
@@ -215,18 +190,19 @@
 
     <!-- START -->
     <div id="screen-start" class="screen-ui">
-        <div style="font-size: 0.9rem; letter-spacing: 5px; color: var(--safety-cyan); margin-bottom: 5px;">VISTA SUPERIOR 2.0</div>
-        <h1 class="title-glow">OWN THE ROAD</h1>
-        <p style="color: #888; margin-bottom: 30px;">Complete o percurso, responda os desafios e compre o carro de F1!</p>
-        <button class="btn-style" id="btn-play">INICIAR CORRIDA</button>
-        <button class="btn-style" style="background:#333" id="btn-garage">MINHA GARAGEM</button>
+        <h1 class="title-glow">OWN THE ROAD 3.0</h1>
+        <p style="color: #888; margin-bottom: 30px; max-width: 400px;">
+            Agora com durabilidade, sistema de ré e perguntas a cada 10 segundos! Compre o F1 definitivo.
+        </p>
+        <button class="btn-style" id="btn-play">INICIAR</button>
+        <button class="btn-style" style="background:#444" id="btn-garage">GARAGEM</button>
     </div>
 
     <!-- GARAGE -->
     <div id="screen-garage" class="screen-ui hide">
         <h1 class="title-glow">GARAGEM</h1>
-        <div id="garage-grid"></div>
-        <button class="btn-style" id="btn-exit-garage">SAIR</button>
+        <div id="garage-grid" style="width:100%; max-height: 50vh; overflow-y:auto; margin-bottom:20px;"></div>
+        <button class="btn-style" id="btn-exit-garage">VOLTAR</button>
     </div>
 
     <!-- QUIZ -->
@@ -241,8 +217,8 @@
     <div id="screen-over" class="screen-ui hide">
         <h1 id="over-t" class="title-glow">FIM DA LINHA</h1>
         <p id="over-res" style="margin-bottom: 30px;"></p>
-        <button class="btn-style" id="btn-restart">TENTAR DE NOVO</button>
-        <button class="btn-style" style="background:#333" id="btn-over-garage">GARAGEM</button>
+        <button class="btn-style" id="btn-restart">RECOMECAR</button>
+        <button class="btn-style" style="background:#555" id="btn-over-garage">GARAGEM</button>
     </div>
 </div>
 
@@ -252,40 +228,30 @@
 
     // VEHICLE DATA
     const VEHICLES = [
-        { id: 0, n: "Compacto", p: 0, s: 6, a: 0.12, c: "#ccc" },
-        { id: 1, n: "Sedan Executivo", p: 200, s: 9, a: 0.18, c: "#336" },
-        { id: 2, n: "SUV Adventure", p: 500, s: 11, a: 0.22, c: "#363" },
-        { id: 3, n: "Esportivo GT", p: 1200, s: 15, a: 0.35, c: "#a33" },
-        { id: 4, n: "F1 ULTIMATE", p: 3000, s: 22, a: 0.60, c: "#e10600" }
+        { id: 0, n: "Compacto", p: 0, s: 6, a: 0.12, c: "#999", type: 'hatch' },
+        { id: 1, n: "Sedan Premium", p: 200, s: 9, a: 0.18, c: "#336", type: 'sedan' },
+        { id: 2, n: "SUV Adventure", p: 500, s: 12, a: 0.22, c: "#262", type: 'suv' },
+        { id: 3, n: "Esportivo GT", p: 1200, s: 16, a: 0.35, c: "#a33", type: 'sport' },
+        { id: 4, n: "F1 ULTIMATE", p: 3000, s: 24, a: 0.65, c: "#E10600", type: 'f1' }
     ];
 
-    // QUESTIONS
     const POOL = [
         { q: "Qual a distância de segurança ao ciclista?", a: "1,5 metro", o: ["0,5m", "2,0m", "5,0m"] },
         { q: "Luz amarela no semáforo significa?", a: "Atenção, pare se possível", o: ["Acelere", "Passe rápido", "Ligue o pisca"] },
         { q: "Beber e dirigir é permitido?", a: "Nunca (Lei Seca)", o: ["Só um copo", "Só se for cerveja", "Se não estiver tonto"] },
         { q: "Uso de celular dirigindo é:", a: "Infração Gravíssima", o: ["Permitido no sinal", "OK se for viva-voz", "Só para olhar GPS"] },
-        { q: "O cinto de segurança é obrigatório:", a: "Para todos os ocupantes", o: ["Só no banco frente", "Só em rodovias", "Não se tiver Airbag"] },
-        { q: "Velocidade máxima em via urbana sem placa?", a: "80km/h (Trânsito Rápido)", o: ["40km/h", "100km/h", "60km/h"] },
-        { q: "Placa 'PARE' exige:", a: "Parada Total do veículo", o: ["Redução", "Atenção", "Olhar e seguir"] },
-        { q: "Chuva forte exige:", a: "Reduzir e dobrar distância", o: ["Ligar o farol alto", "Aumentar velocidade", "Parar na faixa esquerda"] }
+        { q: "Chuva forte exige:", a: "Reduzir e dobrar distância", o: ["Ligar o farol alto", "Aumentar velocidade", "Parar na pista"] },
+        { q: "Velocidade em trânsito rápido sem sinalização?", a: "80km/h", o: ["60km/h", "100km/h", "40km/h"] },
+        { q: "O cinto de segurança é obrigatório:", a: "Todos os passageiros", o: ["Só no banco frente", "Só em rodovias", "Não em baixa velocidade"] },
+        { q: "O que significa 'Direção Defensiva'?", a: "Prever perigos antes deles ocorrerem", o: ["Correr para fugir do trânsito", "Saber se defender de assaltos", "Usar o carro para proteção"] }
     ];
 
-    // PERSISTENCE
     let game = {
-        cash: parseInt(localStorage.getItem('otr_v2_cash')) || 0,
-        owned: JSON.parse(localStorage.getItem('otr_v2_owned')) || [0],
-        sel: parseInt(localStorage.getItem('otr_v2_sel')) || 0,
-        d: 0,
-        target: 10000,
-        v: 0,
-        active: false,
-        px: 300,
-        roadY: 0,
-        obs: [],
-        qTimer: 0,
-        used: [],
-        lt: 0
+        cash: parseInt(localStorage.getItem('v3_c')) || 0,
+        owned: JSON.parse(localStorage.getItem('v3_o')) || [0],
+        sel: parseInt(localStorage.getItem('v3_s')) || 0,
+        hp: 100, d: 0, target: 10000, v: 0, active: false, px: 300, roadY: 0,
+        obs: [], qTimer: 0, used: [], lt: 0
     };
 
     const keys = {};
@@ -295,208 +261,230 @@
     function refreshHUD() {
         document.getElementById('cash-count').innerText = game.cash;
         document.getElementById('dist-count').innerText = Math.floor(game.d / 10);
-        const mapP = (game.d / game.target) * 290;
+        document.getElementById('health-fill').style.width = game.hp + '%';
+        if(game.hp < 40) document.getElementById('health-fill').style.background = '#ff0000';
+        else document.getElementById('health-fill').style.background = '#00ff00';
+        document.getElementById('speed-val').innerText = Math.abs(Math.floor(game.v * 10));
+        const mapP = Math.max(0, Math.min(290, (game.d / game.target) * 290));
         document.getElementById('p-pos').style.bottom = mapP + 'px';
     }
 
     function sync() {
-        localStorage.setItem('otr_v2_cash', game.cash);
-        localStorage.setItem('otr_v2_owned', JSON.stringify(game.owned));
-        localStorage.setItem('otr_v2_sel', game.sel);
+        localStorage.setItem('v3_c', game.cash);
+        localStorage.setItem('v3_o', JSON.stringify(game.owned));
+        localStorage.setItem('v3_s', game.sel);
     }
 
-    function updateGarage() {
-        const grid = document.getElementById('garage-grid');
-        grid.innerHTML = '';
-        VEHICLES.forEach(v => {
-            const has = game.owned.includes(v.id);
-            const isSet = game.sel === v.id;
-            const item = document.createElement('div');
-            item.className = `item-card ${isSet ? 'active' : ''}`;
-            item.innerHTML = `
-                <div style="text-align:left">
-                    <div style="font-weight:900; font-size:1.1rem">${v.n}</div>
-                    <div style="color:var(--caution-yellow)">${has ? 'DISPONÍVEL' : '$' + v.p}</div>
-                </div>
-                <button class="btn-style" style="margin:0; padding:10px 20px; font-size:0.9rem; background:${has ? (isSet ? '#444' : 'var(--safety-cyan)') : 'var(--f1-red)'}">
-                    ${has ? (isSet ? 'EM USO' : 'ESCOLHER') : 'COMPRAR'}
-                </button>
-            `;
-            item.querySelector('button').onclick = () => {
-                if (!has) {
-                    if (game.cash >= v.p) {
-                        game.cash -= v.p;
-                        game.owned.push(v.id);
-                        sync();
-                        updateGarage();
-                        refreshHUD();
-                    } else alert("SEM DINHEIRO!");
-                } else {
-                    game.sel = v.id;
-                    sync();
-                    updateGarage();
-                }
-            };
-            grid.appendChild(item);
-        });
+    function drawDetailedCar(ctx, x, y, color, type, isPlayer = true) {
+        ctx.save();
+        ctx.translate(x, y);
+        
+        // Base Body
+        ctx.fillStyle = color;
+        ctx.shadowBlur = isPlayer ? 10 : 0;
+        ctx.shadowColor = color;
+        
+        switch(type) {
+            case 'f1':
+                // Nose
+                ctx.beginPath(); ctx.roundRect(-10, -50, 20, 40, 5); ctx.fill();
+                // Main body
+                ctx.beginPath(); ctx.roundRect(-22, -15, 44, 50, 10); ctx.fill();
+                // Wings
+                ctx.fillStyle = '#111';
+                ctx.fillRect(-35, -45, 70, 15); // Front wing
+                ctx.fillRect(-35, 30, 70, 15);  // Rear wing
+                // Suspension
+                ctx.strokeStyle = '#222'; ctx.lineWidth = 4;
+                ctx.strokeRect(-30, -30, 60, 5);
+                ctx.strokeRect(-30, 20, 60, 5);
+                break;
+            case 'suv':
+                ctx.beginPath(); ctx.roundRect(-25, -45, 50, 90, 8); ctx.fill();
+                ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(-20, -35, 40, 20); // roof rack
+                break;
+            case 'sport':
+                ctx.beginPath(); ctx.roundRect(-22, -45, 44, 90, 20); ctx.fill();
+                ctx.fillStyle = '#222'; ctx.fillRect(-30, 35, 60, 10); // spoiler
+                break;
+            default: // Sedan / Hatch
+                ctx.beginPath(); ctx.roundRect(-22, -45, 44, 90, 12); ctx.fill();
+        }
+
+        // Details common to all
+        if (type !== 'f1') {
+            // Windshields
+            ctx.fillStyle = 'rgba(255,255,255,0.2)';
+            ctx.beginPath(); ctx.roundRect(-18, -30, 36, 15, 2); ctx.fill(); // front
+            ctx.beginPath(); ctx.roundRect(-18, 25, 36, 10, 2); ctx.fill(); // back
+            // Mirrors
+            ctx.fillStyle = color;
+            ctx.fillRect(-28, -25, 6, 8); ctx.fillRect(22, -25, 6, 8);
+        }
+
+        // Wheels
+        ctx.fillStyle = '#0a0a0a';
+        if (type === 'f1') {
+            ctx.fillRect(-35, -40, 15, 20); ctx.fillRect(20, -40, 15, 20);
+            ctx.fillRect(-35, 15, 15, 25); ctx.fillRect(20, 15, 15, 25);
+        } else {
+            ctx.fillRect(-28, -35, 8, 18); ctx.fillRect(20, -35, 8, 18);
+            ctx.fillRect(-28, 25, 8, 20); ctx.fillRect(20, 25, 8, 20);
+        }
+        
+        ctx.restore();
     }
 
     function popQuiz() {
         if (!game.active) return;
-        let pool = POOL.filter((_, i) => !game.used.includes(i));
-        if (pool.length === 0) { game.used = []; pool = POOL; }
-        
-        const idx = POOL.indexOf(pool[Math.floor(Math.random() * pool.length)]);
+        let p = POOL.filter((_, i) => !game.used.includes(i));
+        if (p.length === 0) { game.used = []; p = POOL; }
+        const idx = POOL.indexOf(p[Math.floor(Math.random() * p.length)]);
         game.used.push(idx);
-        const qData = POOL[idx];
+        const qD = POOL[idx];
 
-        document.getElementById('quiz-q').innerText = qData.q;
-        const optsGroup = document.getElementById('quiz-opts');
-        optsGroup.innerHTML = '';
-
-        [qData.a, ...qData.o].sort(() => Math.random() - 0.5).forEach(opt => {
-            const btn = document.createElement('button');
-            btn.className = 'opt-btn';
-            btn.innerText = opt;
-            btn.onclick = () => {
-                if (opt === qData.a) { game.cash += 50; sync(); refreshHUD(); }
-                else game.v = 0;
+        document.getElementById('quiz-q').innerText = qD.q;
+        const oG = document.getElementById('quiz-opts');
+        oG.innerHTML = '';
+        [qD.a, ...qD.o].sort(() => Math.random() - 0.5).forEach(opt => {
+            const b = document.createElement('button');
+            b.className = 'opt-btn'; b.innerText = opt;
+            b.onclick = () => {
+                if (opt === qD.a) { game.cash += 50; sync(); }
+                else { game.v = 0; game.hp = Math.max(0, game.hp - 10); }
                 document.getElementById('screen-quiz').classList.add('hide');
-                game.active = true;
-                game.qTimer = 0;
+                game.active = true; game.qTimer = 0;
             };
-            optsGroup.appendChild(btn);
+            oG.appendChild(b);
         });
-
         document.getElementById('screen-quiz').classList.remove('hide');
         game.active = false;
     }
 
     function setup() {
-        game.d = 0;
-        game.v = 0;
-        game.px = canvas.width / 2;
+        game.hp = 100; game.d = 0; game.v = 0; game.px = 300; game.qTimer = 0;
         game.obs = [];
-        game.qTimer = 0;
-        for(let i=0; i<30; i++) {
+        for(let i=0; i<40; i++) {
             game.obs.push({
                 x: 180 + Math.random() * 240,
-                y: -(i * 800) - 1200,
-                w: 50, h: 90
+                y: -(i * 600) - 1000,
+                w: 50, h: 90, color: ['#444','#224','#422','#44a'][i%4]
             });
         }
     }
 
     function loop(now) {
         if (game.active) {
-            const step = (now - game.lt) / 1000;
+            const dt = (now - game.lt) / 1000;
             game.lt = now;
+            const car = VEHICLES[game.sel];
 
-            const carProps = VEHICLES[game.sel];
-
-            if (keys['w'] || keys['ArrowUp']) game.v += carProps.a;
-            else if (keys['s'] || keys['ArrowDown']) game.v -= 0.5;
-            else game.v *= 0.99;
+            // Controls (Forward & Reverse)
+            if (keys['w'] || keys['ArrowUp']) game.v += car.a;
+            else if (keys['s'] || keys['ArrowDown']) game.v -= car.a; // Reverse system
+            else game.v *= 0.98;
 
             if (keys['a'] || keys['ArrowLeft']) game.px -= 6;
             if (keys['d'] || keys['ArrowRight']) game.px += 6;
 
-            game.v = Math.max(0, Math.min(game.v, carProps.s));
+            // Clamps
+            game.v = Math.max(-car.s/2, Math.min(game.v, car.s)); // Max reverse is half max speed
             game.px = Math.max(160, Math.min(440, game.px));
 
             game.d += game.v;
             game.roadY = (game.roadY + game.v) % 120;
 
-            game.qTimer += step;
-            if (game.qTimer >= 12) popQuiz();
+            game.qTimer += dt;
+            if (game.qTimer >= 10) popQuiz(); // 10 seconds per user request
 
             game.obs.forEach(o => {
                 o.y += game.v;
                 if (Math.abs(o.x - game.px) < 45 && Math.abs(o.y - (canvas.height - 180)) < 85) {
-                    game.active = false;
-                    document.getElementById('over-res').innerText = "Mantenha o foco! Uma colisão pode ser evitada com atenção.";
-                    document.getElementById('screen-over').classList.remove('hide');
+                    game.hp -= 0.5; // Durability loss on contact
+                    game.v *= 0.95;
                 }
             });
 
-            if (game.d >= game.target) {
+            if (game.hp <= 0) {
                 game.active = false;
-                game.cash += 500;
-                sync();
-                refreshHUD();
+                document.getElementById('over-res').innerText = "Veículo destruído! Dirija com mais prudência.";
+                document.getElementById('screen-over').classList.remove('hide');
+            }
+
+            if (game.d >= game.target) {
+                game.active = false; game.cash += 500; sync();
                 document.getElementById('reward-toast').style.display = 'block';
                 setTimeout(() => {
                     document.getElementById('reward-toast').style.display = 'none';
                     document.getElementById('over-t').innerText = "VITORIA!";
-                    document.getElementById('over-res').innerText = "Parabéns, Capitão da Estrada! Você ganhou $500.";
+                    document.getElementById('over-res').innerText = "Excelente! Você Ganhou $500.";
                     document.getElementById('screen-over').classList.remove('hide');
                 }, 2000);
             }
             refreshHUD();
         }
 
-        // DRAW
-        ctx.fillStyle = '#447a37'; ctx.fillRect(0,0,canvas.width,canvas.height); // Grass
-        ctx.fillStyle = '#333'; ctx.fillRect(150, 0, 300, canvas.height); // Road
+        // RENDER
+        ctx.fillStyle = '#3a6631'; ctx.fillRect(0,0,canvas.width,canvas.height); // Grass
+        ctx.fillStyle = '#222'; ctx.fillRect(150, 0, 300, canvas.height); // Road
+        ctx.fillStyle = '#fff'; ctx.fillRect(150,0,8,canvas.height); ctx.fillRect(442,0,8,canvas.height);
         
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(150, 0, 8, canvas.height); ctx.fillRect(442, 0, 8, canvas.height);
-
-        ctx.setLineDash([40, 40]); ctx.strokeStyle = '#fff'; ctx.lineWidth = 4;
-        ctx.beginPath(); ctx.moveTo(300, -120 + game.roadY); ctx.lineTo(300, canvas.height + 120 + game.roadY);
+        ctx.setLineDash([40,40]); ctx.strokeStyle='rgba(255,255,255,0.5)'; ctx.lineWidth=4;
+        ctx.beginPath(); ctx.moveTo(300, -120 + game.roadY); ctx.lineTo(300, canvas.height+120+game.roadY);
         ctx.stroke(); ctx.setLineDash([]);
 
-        // OBS
-        ctx.fillStyle = '#722';
+        // NPC CARS (Obstacles as cars)
         game.obs.forEach(o => {
-            ctx.beginPath(); ctx.roundRect(o.x - o.w/2, o.y, o.w, o.h, 10); ctx.fill();
-            ctx.fillStyle = '#fff'; ctx.font = '25px bold Arial'; ctx.fillText('⚠', o.x - 12, o.y + 55);
-            ctx.fillStyle = '#722';
+            drawDetailedCar(ctx, o.x, o.y + o.h/2, o.color, 'sedan', false);
         });
 
-        // PLAYER
-        const c = VEHICLES[game.sel];
-        ctx.fillStyle = c.c;
-        ctx.beginPath(); ctx.roundRect(game.px - 22, canvas.height - 180, 44, 90, 8); ctx.fill();
-        ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.fillRect(game.px - 18, canvas.height - 165, 36, 25);
-        ctx.fillStyle = '#000'; 
-        ctx.fillRect(game.px-28, canvas.height-170, 8, 20); ctx.fillRect(game.px+20, canvas.height-170, 8, 20);
-        ctx.fillRect(game.px-28, canvas.height-120, 8, 20); ctx.fillRect(game.px+20, canvas.height-120, 8, 20);
+        // PLAYER CAR
+        const selV = VEHICLES[game.sel];
+        drawDetailedCar(ctx, game.px, canvas.height - 180, selV.c, selV.type, true);
 
         requestAnimationFrame((t) => {
-            if (!game.active && game.lt === 0) game.lt = t;
+            if(!game.active) game.lt = t;
             loop(t);
         });
     }
 
-    // BUTTONS
+    // UI BUTTONS
     document.getElementById('btn-play').onclick = () => {
-        document.getElementById('screen-start').classList.add('hide'); setup();
-        game.active = true; game.lt = performance.now();
+        setup(); game.active = true; game.lt = performance.now();
+        document.getElementById('screen-start').classList.add('hide');
     };
     document.getElementById('btn-garage').onclick = () => {
-        updateGarage(); document.getElementById('screen-garage').classList.remove('hide');
-    };
-    document.getElementById('btn-exit-garage').onclick = () => {
-        document.getElementById('screen-garage').classList.add('hide');
-    };
-    document.getElementById('btn-restart').onclick = () => {
-        document.getElementById('screen-over').classList.add('hide'); setup();
-        game.active = true; game.lt = performance.now();
-    };
-    document.getElementById('btn-over-garage').onclick = () => {
-        document.getElementById('screen-over').classList.add('hide'); updateGarage();
+        const g = document.getElementById('garage-grid'); g.innerHTML = '';
+        VEHICLES.forEach(v => {
+            const has = game.owned.includes(v.id); const isS = game.sel === v.id;
+            const c = document.createElement('div');
+            c.className = `item-card ${isS ? 'active' : ''}`;
+            c.innerHTML = `<div><b>${v.n}</b><br><span style="color:var(--caution-yellow)">${has ? 'ADQUIRIDO' : '$'+v.p}</span></div><button class="btn-style" style="margin:0; padding:10px 20px;">${has ? (isS ? 'USANDO' : 'EQUIPAR') : 'COMPRAR'}</button>`;
+            c.querySelector('button').onclick = () => {
+                if(!has && game.cash >= v.p) { game.cash -= v.p; game.owned.push(v.id); sync(); }
+                else if(has) game.sel = v.id;
+                sync(); document.getElementById('btn-garage').click();
+            };
+            g.appendChild(c);
+        });
         document.getElementById('screen-garage').classList.remove('hide');
     };
+    document.getElementById('btn-exit-garage').onclick = () => document.getElementById('screen-garage').classList.add('hide');
+    document.getElementById('btn-restart').onclick = () => {
+        setup(); game.active = true; game.lt = performance.now();
+        document.getElementById('screen-over').classList.add('hide');
+    };
+    document.getElementById('btn-over-garage').onclick = () => {
+        document.getElementById('screen-over').classList.add('hide');
+        document.getElementById('btn-garage').click();
+    };
 
-    function start() {
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
-        refreshHUD();
-        loop(performance.now());
+    function boot() {
+        canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
+        refreshHUD(); loop(performance.now());
     }
-    window.onresize = start;
-    start();
+    window.onresize = boot;
+    boot();
 
 </script>
 </body>
