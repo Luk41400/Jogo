@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Own the Road v3.6 | CLASSIC CARS & MUSIC</title>
+    <title>Own the Road v3.7 | AC/DC EDITION</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@900&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -11,7 +11,6 @@
             --safety-cyan: #00F2FF;
             --caution-yellow: #FFD700;
             --dark-bg: #050505;
-            --neon: 0 0 20px rgba(0, 242, 255, 0.4);
         }
 
         * { margin:0; padding:0; box-sizing:border-box; user-select:none; }
@@ -24,6 +23,7 @@
 
         canvas { display:block; width:100%; height:100%; }
 
+        /* HUD */
         .hud { position:absolute; top:20px; left:20px; right:20px; z-index:10; pointer-events:none; display:flex; flex-direction:column; gap:8px; }
         .stat { background:rgba(0,0,0,0.9); padding:10px; border-radius:8px; border-left:4px solid var(--safety-cyan); width:fit-content; }
         .hp-cont { width:100px; height:8px; background:#333; border-radius:4px; overflow:hidden; margin-top:4px; }
@@ -42,11 +42,17 @@
         }
         .hide { display:none !important; }
         .btn { background:var(--f1-red); color:white; border:none; padding:15px 30px; font-weight:900; font-size:1.1rem; cursor:pointer; border-radius:5px; margin:10px; }
-        .btn:hover { transform:scale(1.05); filter: brightness(1.2); }
+        .btn:hover { transform:scale(1.05); }
+
+        /* Hidden YT Player */
+        #music-frame { position: absolute; top: -100px; left: -100px; width: 1px; height: 1px; visibility: hidden; pointer-events: none; }
 
     </style>
 </head>
 <body>
+
+<!-- Hidden Player for AC/DC - Back In Black -->
+<div id="music-frame"></div>
 
 <div id="game-area">
     <canvas id="gameCanvas"></canvas>
@@ -61,11 +67,10 @@
 
     <!-- MAIN MENU -->
     <div id="scr-menu" class="screen">
-        <h1 style="font-size:3rem; color:var(--f1-red); margin-bottom:20px; text-shadow: 0 0 10px var(--f1-red);">OWN THE ROAD</h1>
-        <p style="color:#aaa; margin-bottom:30px;">Classic Style & Rock'n Roll</p>
+        <h1 style="font-size:3.5rem; color:var(--f1-red); margin-bottom:10px; text-shadow: 0 0 15px rgba(225,6,0,0.6);">OWN THE ROAD</h1>
+        <p style="color:#888; margin-bottom:40px; font-weight: 700;">AC/DC EDITION | BACK IN BLACK</p>
         <button class="btn" id="go-race">INICIAR CORRIDA</button>
         <button class="btn" style="background:#444" id="go-garage">GARAGEM</button>
-        <div style="font-size: 0.7rem; color: #555; margin-top: 20px;">Trilha Sonora: Rock Instrumental</div>
     </div>
 
     <!-- GARAGE -->
@@ -87,47 +92,57 @@
     <div id="scr-res" class="screen hide">
         <h1 id="res-title" style="font-size:2.5rem;">FIM</h1>
         <p id="res-msg" style="margin:20px 0; color:#ccc;"></p>
-        <button class="btn" id="retry">REPETIR</button>
+        <button class="btn" id="retry">JOGAR NOVAMENTE</button>
         <button class="btn" style="background:#444" id="back-menu">MENU</button>
     </div>
 </div>
 
-<!-- Audio for Background Music -->
-<audio id="bg-music" loop>
-    <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" type="audio/mpeg">
-</audio>
-
 <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-    const audio = document.getElementById('bg-music');
+
+    // YouTube Integration
+    let player;
+    const tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    const firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+    function onYouTubeIframeAPIReady() {
+        player = new YT.Player('music-frame', {
+            height: '1',
+            width: '1',
+            videoId: 'pAgnJDJN4VA', // AC/DC - Back In Black
+            playerVars: { 'autoplay': 0, 'loop': 1, 'playlist': 'pAgnJDJN4VA' },
+            events: { 'onReady': () => console.log("AC/DC Ready!") }
+        });
+    }
 
     // CAR DATA
     const CARS = [
-        { id: 0, n: "Popular", p: 0, s: 7, a: 0.12, c: "#999", type: 'hatch' },
-        { id: 1, n: "Sedan Premium", p: 300, s: 10, a: 0.2, c: "#336", type: 'sedan' },
-        { id: 2, n: "SUV Adventure", p: 800, s: 13, a: 0.25, c: "#262", type: 'suv' },
-        { id: 3, n: "Esportivo GT", p: 2000, s: 18, a: 0.4, c: "#a33", type: 'sport' },
-        { id: 4, n: "MONOPOSTO F1", p: 5000, s: 26, a: 0.7, c: "#e10600", type: 'f1' }
+        { id: 0, n: "Hatch Popular", p: 0, s: 7, a: 0.12, c: "#999", type: 'hatch' },
+        { id: 1, n: "Sedan Premium", p: 400, s: 10, a: 0.2, c: "#336", type: 'sedan' },
+        { id: 2, n: "SUV Adventure", p: 1000, s: 13, a: 0.25, c: "#262", type: 'suv' },
+        { id: 3, n: "Super Carro", p: 2500, s: 19, a: 0.45, c: "#a33", type: 'sport' },
+        { id: 4, n: "F1 MONOPOSTO", p: 6000, s: 28, a: 0.8, c: "#e10600", type: 'f1' }
     ];
 
     const QUIZ_LIST = [
-        { q: "Qual a distância segura do ciclista?", a: "1,5 metro", o: ["0,5m", "Perto", "2,0m"] },
-        { q: "Sinal Amarelo significa:", a: "Parar se puder", o: ["Acelerar", "Buzinar", "Seguir"] },
-        { q: "Bebida alcoólica e direção?", a: "Tolerância Zero", o: ["1 Taça", "Sempre OK", "Só feriado"] },
-        { q: "O cinto é obrigatório para:", a: "Todos os ocupantes", o: ["Só frente", "Só motorista", "Só rodovia"] }
+        { q: "Qual a distância segura do ciclista?", a: "1,5 metro", o: ["0,5m", "100m", "2,0m"] },
+        { q: "Sinal Amarelo significa:", a: "Parar se puder", o: ["Acelerar", "Buzinar", "Passar"] },
+        { q: "Álcool e Direção?", a: "Tolerância Zero", o: ["Pode 1 taça", "Ok fins de semana", "Só em rodovias"] }
     ];
 
     let st = {
-        cash: parseInt(localStorage.getItem('otr_36_m')) || 0,
-        owned: JSON.parse(localStorage.getItem('otr_36_o')) || [0],
-        sel: parseInt(localStorage.getItem('otr_36_s')) || 0,
+        cash: parseInt(localStorage.getItem('otr_37_m')) || 0,
+        owned: JSON.parse(localStorage.getItem('otr_37_o')) || [0],
+        sel: parseInt(localStorage.getItem('otr_37_s')) || 0,
         hp: 100, d: 0, v: 0, act: false, px: 300, roadY: 0, obs: [], qT: 0, lt: 0
     };
 
     const keys = {}; window.onkeydown = e => keys[e.key] = true; window.onkeyup = e => keys[e.key] = false;
 
-    function save() { localStorage.setItem('otr_36_m', st.cash); localStorage.setItem('otr_36_o', JSON.stringify(st.owned)); localStorage.setItem('otr_36_s', st.sel); }
+    function save() { localStorage.setItem('otr_37_m', st.cash); localStorage.setItem('otr_37_o', JSON.stringify(st.owned)); localStorage.setItem('otr_37_s', st.sel); }
 
     function refreshHUD() { 
         document.getElementById('m-val').innerText = '$' + st.cash;
@@ -136,57 +151,51 @@
         document.getElementById('sp-num').innerText = Math.abs(Math.floor(st.v * 12));
     }
 
-    // DRAW CAR IN CLASSIC (CANVAS) STYLE
+    // CLASSIC CANVAS RENDERER
     function drawCar(ctx, x, y, color, type, isPlayer) {
         ctx.save();
         ctx.translate(x, y);
         ctx.fillStyle = color;
         
         if (type === 'f1') {
-            ctx.beginPath(); ctx.roundRect(-10, -50, 20, 40, 5); ctx.fill(); // Nose
-            ctx.beginPath(); ctx.roundRect(-22, -15, 44, 50, 10); ctx.fill(); // Body
-            ctx.fillStyle = '#000';
-            ctx.fillRect(-35, -45, 70, 15); // Front wing
-            ctx.fillRect(-35, 30, 70, 15);  // Rear wing
-        } else if(type === 'suv') {
-            ctx.beginPath(); ctx.roundRect(-25, -45, 50, 90, 8); ctx.fill();
+            // F1 MONOPOSTO
+            ctx.beginPath(); ctx.roundRect(-10, -50, 20, 35, 3); ctx.fill(); // Nose
+            ctx.beginPath(); ctx.roundRect(-22, -15, 44, 45, 8); ctx.fill(); // Body
+            ctx.fillStyle = "#111";
+            ctx.fillRect(-35, -45, 70, 12); // Front wing
+            ctx.fillRect(-35, 25, 70, 15);  // Rear wing
+            ctx.fillRect(-38, -35, 12, 18); ctx.fillRect(26, -35, 12, 18); // F WHEELS
+            ctx.fillRect(-38, 15, 12, 22); ctx.fillRect(26, 15, 12, 22);   // R WHEELS
         } else {
-            ctx.beginPath(); ctx.roundRect(-22, -45, 44, 90, 12); ctx.fill();
+            // Hatch/Sedan/SUV/Sport
+            let w = 44, h = 90;
+            if(type === 'suv') w = 50; if(type === 'sport') w = 46;
+            ctx.beginPath(); ctx.roundRect(-w/2, -h/2, w, h, 12); ctx.fill();
+            // Window
+            ctx.fillStyle = 'rgba(255,255,255,0.2)';
+            ctx.beginPath(); ctx.roundRect(-w/2+5, -h/2+15, w-10, 15, 2); ctx.fill();
+            // Wheels
+            ctx.fillStyle = '#000';
+            ctx.fillRect(-w/2-5, -h/2+10, 8, 18); ctx.fillRect(w/2-3, -h/2+10, 8, 18);
+            ctx.fillRect(-w/2-5, h/2-30, 8, 20); ctx.fillRect(w/2-3, h/2-30, 8, 20);
         }
-
-        // Common details
-        ctx.fillStyle = 'rgba(255,255,255,0.3)';
-        ctx.beginPath(); ctx.roundRect(-18, -30, 36, 15, 2); ctx.fill(); // windshield
-        
-        // Wheels
-        ctx.fillStyle = '#000';
-        ctx.fillRect(-28, -35, 8, 18); ctx.fillRect(20, -35, 8, 18);
-        ctx.fillRect(-28, 25, 8, 20); ctx.fillRect(20, 25, 8, 20);
-        
         ctx.restore();
     }
 
-    function spawnObs() {
+    function spawn() {
         st.obs = [];
-        for(let i=0; i<40; i++) st.obs.push({ x: 180 + Math.random()*240, y: -(i*800)-1400, c: ['#444','#226','#622'][i%3], t: 'sedan' });
+        for(let i=0; i<40; i++) st.obs.push({ x: 180 + Math.random()*240, y: -(i*800)-1200, c: ['#555','#336','#633'][i%3], t: 'sedan' });
     }
 
-    function popQuiz() {
-        const q = QUIZ_LIST[Math.floor(Math.random()*QUIZ_LIST.length)];
-        document.getElementById('q-txt').innerText = q.q;
+    function quiz() {
+        const qData = QUIZ_LIST[Math.floor(Math.random()*QUIZ_LIST.length)];
+        document.getElementById('q-txt').innerText = qData.q;
         const box = document.getElementById('q-box'); box.innerHTML = '';
-        
-        // Ensure ONLY ONE correct option
-        const options = [q.a, ...q.o].sort(()=>Math.random()-0.5);
-        options.forEach(opt => {
-            const b = document.createElement('button'); b.className = 'btn'; b.innerText = opt;
+        [qData.a, ...qData.o].sort(()=>Math.random()-0.5).forEach(o => {
+            const b = document.createElement('button'); b.className = 'btn'; b.innerText = o;
             b.onclick = () => {
-                if(opt === q.a) { 
-                    st.cash += 150; save(); 
-                } else { 
-                    st.hp = Math.max(0, st.hp - 25); 
-                    alert("Resposta Incorreta! -25% de Durabilidade.");
-                }
+                if(o === qData.a) { st.cash += 150; save(); }
+                else { st.hp = Math.max(0, st.hp - 30); alert("Incorreto! -30% Durabilidade!"); }
                 document.getElementById('scr-quiz').classList.add('hide'); st.act = true; st.qT = 0;
             };
             box.appendChild(b);
@@ -198,6 +207,7 @@
         if(st.act) {
             const dt = (now - st.lt)/1000; st.lt = now;
             const c = CARS[st.sel];
+
             if(keys['w'] || keys['ArrowUp']) st.v += c.a;
             else if(keys['s'] || keys['ArrowDown']) st.v -= c.a;
             else st.v *= 0.98;
@@ -205,28 +215,28 @@
             if(keys['a'] || keys['ArrowLeft']) st.px -= 6;
             if(keys['d'] || keys['ArrowRight']) st.px += 6;
 
-            st.v = Math.max(-c.s/2, Math.min(st.v, c.s));
+            st.v = Math.max(-c.s, Math.min(st.v, c.s));
             st.px = Math.max(160, Math.min(440, st.px));
             st.d += st.v; st.roadY = (st.roadY + st.v)%120;
             
-            st.qT += dt; if(st.qT >= 10) pop();
+            st.qT += dt; if(st.qT >= 10) quiz();
             
             st.obs.forEach(o => {
                 o.y += st.v;
                 if(Math.abs(o.x - st.px) < 45 && Math.abs(o.y - (canvas.height-180)) < 85) { 
-                    st.hp -= 0.5; st.v *= 0.95; 
+                    st.hp -= 0.6; st.v *= 0.9; 
                 }
             });
 
             if(st.hp <= 0) { 
-                st.act = false; document.getElementById('res-title').innerText = "FALHA";
-                document.getElementById('res-msg').innerText = "Veículo destruído!";
+                st.act = false; document.getElementById('res-title').innerText = "VÉICULO DESTRUÍDO";
+                document.getElementById('res-msg').innerText = "Danos críticos na estrutura.";
                 document.getElementById('scr-res').classList.remove('hide');
             }
             if(st.d >= 10000) {
                 st.act = false; st.cash += 500; save();
-                document.getElementById('res-title').innerText = "VITÓRIA";
-                document.getElementById('res-msg').innerText = "Parabéns, Capitão! +$500";
+                document.getElementById('res-title').innerText = "MISSÃO COMPLETA";
+                document.getElementById('res-msg').innerText = "Parabéns, Capitão da F1! +$500";
                 document.getElementById('scr-res').classList.remove('hide');
             }
             refreshHUD();
@@ -234,43 +244,44 @@
 
         ctx.fillStyle = '#2d5a27'; ctx.fillRect(0,0,canvas.width,canvas.height); // Grass
         ctx.fillStyle = '#222'; ctx.fillRect(150,0,300,canvas.height); // Road
+        ctx.fillStyle = '#fff'; ctx.fillRect(150,0,6,canvas.height); ctx.fillRect(444,0,6,canvas.height);
         
-        ctx.setLineDash([40,40]); ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.beginPath(); ctx.moveTo(300, -100+st.roadY); ctx.lineTo(300, canvas.height+100+st.roadY); ctx.stroke();
-        
+        ctx.setLineDash([40,40]); ctx.strokeStyle='rgba(255,255,255,0.4)'; ctx.beginPath(); ctx.moveTo(300, -100+st.roadY); ctx.lineTo(300, canvas.height+100+st.roadY); ctx.stroke(); ctx.setLineDash([]);
+
         st.obs.forEach(o => drawCar(ctx, o.x, o.y, o.c, o.t, false));
         drawCar(ctx, st.px, canvas.height-180, CARS[st.sel].c, CARS[st.sel].type, true);
         
         requestAnimationFrame(loop);
     }
 
-    // INTERFACE
+    // BUTTONS
     document.getElementById('go-race').onclick = () => { 
-        audio.play().catch(()=>{}); 
+        if(player) player.playVideo(); 
         document.getElementById('scr-menu').classList.add('hide'); 
-        st.hp=100; st.d=0; st.v=0; st.px=300; spawnObs(); st.act = true; st.lt = performance.now(); 
+        st.hp=100; st.d=0; st.v=0; st.px=300; spawn(); st.act = true; st.lt = performance.now(); 
     };
     document.getElementById('go-garage').onclick = () => {
         const list = document.getElementById('car-list'); list.innerHTML = '';
         CARS.forEach(v => {
             const has = st.owned.includes(v.id); const sel = st.sel === v.id;
-            const div = document.createElement('div');
-            div.style = "background:#111; padding:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; border:1px solid "+(sel?'var(--safety-cyan)':'#333');
-            div.innerHTML = `<div><b>${v.n}</b><br><small>${has?'COLECIONADO':'$'+v.p}</small></div><button class="btn" style="padding:6px 12px; font-size:0.8rem">${has?(sel?'EQUIPADO':'ESCOLHER'):'COMPRAR'}</button>`;
-            div.querySelector('button').onclick = () => {
+            const card = document.createElement('div');
+            card.style = "background:#000; padding:15px; margin-bottom:10px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; border:1px solid "+(sel?'var(--safety-cyan)':'#333');
+            card.innerHTML = `<div><b>${v.n}</b><br><small style="color:var(--caution-yellow)">${has?'COLECIONADO':'$'+v.p}</small></div><button class="btn" style="padding:6px 12px; font-size:0.8rem">${has?(sel?'EQUIPADO':'ESCOLHER'):'COMPRAR'}</button>`;
+            card.querySelector('button').onclick = () => {
                 if(!has && st.cash >= v.p) { st.cash -= v.p; st.owned.push(v.id); save(); document.getElementById('go-garage').click(); }
                 else if(has) { st.sel = v.id; save(); document.getElementById('go-garage').click(); }
             };
-            list.appendChild(div);
+            list.appendChild(card);
         });
         document.getElementById('scr-garage').classList.remove('hide');
     };
     document.getElementById('exit-garage').onclick = () => document.getElementById('scr-garage').classList.add('hide');
-    document.getElementById('retry').onclick = () => { document.getElementById('scr-res').classList.add('hide'); st.hp=100; st.d=0; st.v=0; st.px=300; spawnObs(); st.act = true; st.lt = performance.now(); };
-    document.getElementById('back-menu').onclick = () => { document.getElementById('scr-res').classList.add('hide'); document.getElementById('scr-menu').classList.remove('hide'); };
+    document.getElementById('retry').onclick = () => { document.getElementById('scr-res').classList.add('hide'); st.hp=100; st.d=0; st.v=0; st.px=300; spawn(); st.act = true; st.lt = performance.now(); };
+    document.getElementById('back-menu').onclick = () => { if(player) player.stopVideo(); document.getElementById('scr-res').classList.add('hide'); document.getElementById('scr-menu').classList.remove('hide'); };
 
-    function boot() { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; refreshHUD(); loop(performance.now()); }
-    window.onresize = boot;
-    boot();
+    function start() { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; refreshHUD(); loop(performance.now()); }
+    window.onresize = start;
+    start();
 
 </script>
 </body>
