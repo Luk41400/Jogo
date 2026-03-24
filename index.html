@@ -251,8 +251,12 @@
             b.className = 'btn-action'; style = 'width:100%';
             b.innerText = opt;
             b.onclick = () => {
-                if (opt === q.a) { state.money += 100; sync(); }
-                else { state.hp -= 20; }
+                if (opt === q.a) { 
+                    state.money += 100; sync(); 
+                } else { 
+                    state.hp = Math.max(0, state.hp - 30); // Penality: -30 durability
+                    alert("Resposta Incorreta! -30% de Durabilidade.");
+                }
                 document.getElementById('screen-quiz').classList.add('hide');
                 state.active = true; state.qTimer = 0;
             };
