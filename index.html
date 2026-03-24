@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Own the Road v3.5 | MEGA UPDATE</title>
+    <title>Own the Road v3.6 | CLASSIC CARS & MUSIC</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@900&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
             --f1-red: #E10600;
             --safety-cyan: #00F2FF;
             --caution-yellow: #FFD700;
-            --blue-new: #0047AB;
-            --dark-bg: #020202;
+            --dark-bg: #050505;
+            --neon: 0 0 20px rgba(0, 242, 255, 0.4);
         }
 
         * { margin:0; padding:0; box-sizing:border-box; user-select:none; }
@@ -19,26 +19,19 @@
         
         #game-area {
             position:relative; width:100vw; height:100vh; max-width:600px; max-height:900px;
-            background:#111; border:5px solid #333; overflow:hidden;
+            background:#111; border:5px solid #222; overflow:hidden;
         }
-
-        #new-ver-banner {
-            position:absolute; top:0; left:0; width:100%; height:40px; background:var(--blue-new);
-            color:white; z-index:2000; display:flex; align-items:center; justify-content:center;
-            font-weight:900; font-size:1.2rem; animation: pulse 1s infinite; border-bottom: 2px solid white;
-        }
-        @keyframes pulse { 0% { background: var(--blue-new); } 50% { background: #0080FF; } 100% { background: var(--blue-new); } }
 
         canvas { display:block; width:100%; height:100%; }
 
-        .hud { position:absolute; top:50px; left:20px; right:20px; z-index:10; pointer-events:none; display:flex; flex-direction:column; gap:8px; }
+        .hud { position:absolute; top:20px; left:20px; right:20px; z-index:10; pointer-events:none; display:flex; flex-direction:column; gap:8px; }
         .stat { background:rgba(0,0,0,0.9); padding:10px; border-radius:8px; border-left:4px solid var(--safety-cyan); width:fit-content; }
         .hp-cont { width:100px; height:8px; background:#333; border-radius:4px; overflow:hidden; margin-top:4px; }
         #hp-bar { width:100%; height:100%; background:#0f0; transition:0.3s; }
 
         #speedo {
             position:absolute; bottom:20px; left:20px; width:100px; height:100px;
-            background:rgba(0,0,0,0.9); border-radius:50%; border:2px solid #555;
+            background:rgba(0,0,0,0.9); border-radius:50%; border:2px solid #444;
             display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:10;
         }
         #sp-num { font-size:1.5rem; font-weight:900; color:var(--safety-cyan); }
@@ -49,14 +42,13 @@
         }
         .hide { display:none !important; }
         .btn { background:var(--f1-red); color:white; border:none; padding:15px 30px; font-weight:900; font-size:1.1rem; cursor:pointer; border-radius:5px; margin:10px; }
-        .btn:hover { transform:scale(1.1); }
+        .btn:hover { transform:scale(1.05); filter: brightness(1.2); }
 
     </style>
 </head>
 <body>
 
 <div id="game-area">
-    <div id="new-ver-banner">✨ VERSÃO 3.5 ATUALIZADA (VISTA DE CIMA) ✨</div>
     <canvas id="gameCanvas"></canvas>
 
     <div class="hud">
@@ -69,22 +61,23 @@
 
     <!-- MAIN MENU -->
     <div id="scr-menu" class="screen">
-        <h1 style="font-size:3rem; color:var(--f1-red); margin-bottom:20px;">OWN THE ROAD 3.5</h1>
-        <p style="color:#aaa; margin-bottom:40px;">Top-Down, Imagens Reais, Ré e Garagem!</p>
+        <h1 style="font-size:3rem; color:var(--f1-red); margin-bottom:20px; text-shadow: 0 0 10px var(--f1-red);">OWN THE ROAD</h1>
+        <p style="color:#aaa; margin-bottom:30px;">Classic Style & Rock'n Roll</p>
         <button class="btn" id="go-race">INICIAR CORRIDA</button>
         <button class="btn" style="background:#444" id="go-garage">GARAGEM</button>
+        <div style="font-size: 0.7rem; color: #555; margin-top: 20px;">Trilha Sonora: Rock Instrumental</div>
     </div>
 
     <!-- GARAGE -->
     <div id="scr-garage" class="screen hide">
         <h1 style="color:var(--safety-cyan)">MINHA GARAGEM</h1>
         <div id="car-list" style="width:100%; max-height:60vh; overflow-y:auto; margin:20px 0;"></div>
-        <button class="btn" id="exit-garage">SAIR</button>
+        <button class="btn" id="exit-garage">VOLTAR</button>
     </div>
 
     <!-- QUIZ -->
     <div id="scr-quiz" class="screen hide">
-        <div style="background:#111; border:2px solid var(--safety-cyan); padding:30px; border-radius:20px; width:90%;">
+        <div style="background:#000; border:2px solid var(--safety-cyan); padding:30px; border-radius:20px; width:90%;">
             <h2 id="q-txt" style="margin-bottom:20px;">?</h2>
             <div id="q-box" style="display:flex; flex-direction:column; gap:10px;"></div>
         </div>
@@ -94,75 +87,106 @@
     <div id="scr-res" class="screen hide">
         <h1 id="res-title" style="font-size:2.5rem;">FIM</h1>
         <p id="res-msg" style="margin:20px 0; color:#ccc;"></p>
-        <button class="btn" id="retry">JOGAR NOVAMENTE</button>
-        <button class="btn" style="background:#444" id="back-menu">VOLTAR AO MENU</button>
+        <button class="btn" id="retry">REPETIR</button>
+        <button class="btn" style="background:#444" id="back-menu">MENU</button>
     </div>
 </div>
+
+<!-- Audio for Background Music -->
+<audio id="bg-music" loop>
+    <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" type="audio/mpeg">
+</audio>
 
 <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-
-    // FORCE CACHE REFRESH ALERT
-    console.log("GAME ENGINE v3.5 MOUNTED");
-
-    // CAR RENDER SYSTEM (Images via SVG Data URI)
-    const CAR_SVG = {
-        hatch: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iOTAiIHZpZXdCb3g9IjAgMCA1MCA5MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB4PSI1IiB5PSIxMCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjcwIiByeD0iMTAiIGZpbGw9IiNhYWEiLz48cmVjdCB4PSI4IiB5PSIyNSIgd2lkdGg9IjM0IiBoZWlnaHQ9IjE1IiByeD0iMiIgZmlsbD0iIzg3Y2VmYSIvPjxib2R5IHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hodG1sIi8+PC9zdmc+",
-        sedan: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iOTAiIHZpZXdCb3g9IjAgMCA1MCA5MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB4PSI1IiB5PSI1IiB3aWR0aD0iNDAiIGhlaWdodD0iODAiIHJ4PSI4IiBpbGw9IiMzMzYiLz48cmVjdCB4PSI4IiB5PSIyNSIgd2lkdGg9IjM0IiBoZWlnaHQ9IjIwIiByeD0iMyIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuMSIvPjxib2R5IHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hodG1sIi8+PC9zdmc+",
-        suv: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgNjAgMTAwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHg9IjUiIHk9IjUiIHdpZHRoPSI1MCIgaGVpZ2h0PSI5MCIByeD0iNSIgZmlsbD0iIzI2MiIvPjxyZWN0IHg9IjEwIiB5PSIxNSIgd2lkdGg9IjQwIiBoZWlnaHQ9IjI1IiByeD0iMiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNCIvPjxib2R5IHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hodG1sIi8+PC9zdmc+",
-        sport: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgNTAgMTAwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHg9IjUiIHk9IjEwIiB3aWR0aD0iNDAiIGhlaWdodD0iODAiIHJ4PSIyMCIgZmlsbD0ib3JhbmdlIi8+PHJlY3QgeD0iMTAiIHk9IjM1IiB3aWR0aD0iMzAiIGhlaWdodD0iMjAiIHJ4PSI1IiBmaWxsPSJibGFjayIvPjxib2R5IHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hodG1sIi8+PC9zdmc+",
-        f1: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgNjAgMTAwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHg9IjIwIiB5PSIxMCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUwIiByeD0iNSIgZmlsbD0icmVkIi8+PHJlY3QgeD0iMCIgeT0iMzAiIHdpZHRoPSI2MCIgaGVpZ2h0PSIxNSIgZmlsbD0iYmxhY2siLz48cmVjdCB4PSIwIiB5PSI4MCIgd2lkdGg9IjYwIiBoZWlnaHQ9IjE1IiBmaWxsPSJibGFjayIvPjxib2R5IHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hodG1sIi8+PC9zdmc+"
-    }
-    const IMGS = {}; Object.keys(CAR_SVG).forEach(k => { IMGS[k] = new Image(); IMGS[k].src = CAR_SVG[k]; });
+    const audio = document.getElementById('bg-music');
 
     // CAR DATA
     const CARS = [
-        { id: 0, n: "Popular", p: 0, s: 7, a: 0.12, t: 'hatch' },
-        { id: 1, n: "Sedan Premium", p: 300, s: 10, a: 0.2, t: 'sedan' },
-        { id: 2, n: "SUV Adventure", p: 1000, s: 13, a: 0.25, t: 'suv' },
-        { id: 3, n: "Esportivo GT", p: 2500, s: 18, a: 0.4, t: 'sport' },
-        { id: 4, n: "MONOPOSTO F1", p: 6000, s: 26, a: 0.7, t: 'f1' }
+        { id: 0, n: "Popular", p: 0, s: 7, a: 0.12, c: "#999", type: 'hatch' },
+        { id: 1, n: "Sedan Premium", p: 300, s: 10, a: 0.2, c: "#336", type: 'sedan' },
+        { id: 2, n: "SUV Adventure", p: 800, s: 13, a: 0.25, c: "#262", type: 'suv' },
+        { id: 3, n: "Esportivo GT", p: 2000, s: 18, a: 0.4, c: "#a33", type: 'sport' },
+        { id: 4, n: "MONOPOSTO F1", p: 5000, s: 26, a: 0.7, c: "#e10600", type: 'f1' }
     ];
 
     const QUIZ_LIST = [
         { q: "Qual a distância segura do ciclista?", a: "1,5 metro", o: ["0,5m", "Perto", "2,0m"] },
         { q: "Sinal Amarelo significa:", a: "Parar se puder", o: ["Acelerar", "Buzinar", "Seguir"] },
-        { q: "Dirigir alcoolizado é:", a: "Crime e perigo real", o: ["Normal", "Só se bater", "Permitido 1 copo"] }
+        { q: "Bebida alcoólica e direção?", a: "Tolerância Zero", o: ["1 Taça", "Sempre OK", "Só feriado"] },
+        { q: "O cinto é obrigatório para:", a: "Todos os ocupantes", o: ["Só frente", "Só motorista", "Só rodovia"] }
     ];
 
     let st = {
-        cash: parseInt(localStorage.getItem('otr_35_m')) || 0,
-        owned: JSON.parse(localStorage.getItem('otr_35_o')) || [0],
-        sel: parseInt(localStorage.getItem('otr_35_s')) || 0,
+        cash: parseInt(localStorage.getItem('otr_36_m')) || 0,
+        owned: JSON.parse(localStorage.getItem('otr_36_o')) || [0],
+        sel: parseInt(localStorage.getItem('otr_36_s')) || 0,
         hp: 100, d: 0, v: 0, act: false, px: 300, roadY: 0, obs: [], qT: 0, lt: 0
     };
 
     const keys = {}; window.onkeydown = e => keys[e.key] = true; window.onkeyup = e => keys[e.key] = false;
 
-    function save() { localStorage.setItem('otr_35_m', st.cash); localStorage.setItem('otr_35_o', JSON.stringify(st.owned)); localStorage.setItem('otr_35_s', st.sel); }
+    function save() { localStorage.setItem('otr_36_m', st.cash); localStorage.setItem('otr_36_o', JSON.stringify(st.owned)); localStorage.setItem('otr_36_s', st.sel); }
 
-    function refresh() { 
+    function refreshHUD() { 
         document.getElementById('m-val').innerText = '$' + st.cash;
         document.getElementById('hp-bar').style.width = st.hp + '%';
         document.getElementById('d-val').innerText = Math.floor(st.d / 10);
         document.getElementById('sp-num').innerText = Math.abs(Math.floor(st.v * 12));
     }
 
-    function init() {
-        st.hp = 100; st.d = 0; st.v = 0; st.px = 300; st.qT = 0; st.obs = [];
-        for(let i=0; i<40; i++) st.obs.push({ x: 180 + Math.random()*240, y: -(i*800)-1000, t: i%2?'sedan':'hatch' });
+    // DRAW CAR IN CLASSIC (CANVAS) STYLE
+    function drawCar(ctx, x, y, color, type, isPlayer) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.fillStyle = color;
+        
+        if (type === 'f1') {
+            ctx.beginPath(); ctx.roundRect(-10, -50, 20, 40, 5); ctx.fill(); // Nose
+            ctx.beginPath(); ctx.roundRect(-22, -15, 44, 50, 10); ctx.fill(); // Body
+            ctx.fillStyle = '#000';
+            ctx.fillRect(-35, -45, 70, 15); // Front wing
+            ctx.fillRect(-35, 30, 70, 15);  // Rear wing
+        } else if(type === 'suv') {
+            ctx.beginPath(); ctx.roundRect(-25, -45, 50, 90, 8); ctx.fill();
+        } else {
+            ctx.beginPath(); ctx.roundRect(-22, -45, 44, 90, 12); ctx.fill();
+        }
+
+        // Common details
+        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        ctx.beginPath(); ctx.roundRect(-18, -30, 36, 15, 2); ctx.fill(); // windshield
+        
+        // Wheels
+        ctx.fillStyle = '#000';
+        ctx.fillRect(-28, -35, 8, 18); ctx.fillRect(20, -35, 8, 18);
+        ctx.fillRect(-28, 25, 8, 20); ctx.fillRect(20, 25, 8, 20);
+        
+        ctx.restore();
     }
 
-    function pop() {
+    function spawnObs() {
+        st.obs = [];
+        for(let i=0; i<40; i++) st.obs.push({ x: 180 + Math.random()*240, y: -(i*800)-1400, c: ['#444','#226','#622'][i%3], t: 'sedan' });
+    }
+
+    function popQuiz() {
         const q = QUIZ_LIST[Math.floor(Math.random()*QUIZ_LIST.length)];
         document.getElementById('q-txt').innerText = q.q;
         const box = document.getElementById('q-box'); box.innerHTML = '';
-        [q.a, ...q.o].sort(()=>Math.random()-0.5).forEach(opt => {
+        
+        // Ensure ONLY ONE correct option
+        const options = [q.a, ...q.o].sort(()=>Math.random()-0.5);
+        options.forEach(opt => {
             const b = document.createElement('button'); b.className = 'btn'; b.innerText = opt;
             b.onclick = () => {
-                if(opt === q.a) { st.cash += 100; save(); }
-                else { st.hp = Math.max(0, st.hp - 30); alert("Errou! -30% Durabilidade!"); }
+                if(opt === q.a) { 
+                    st.cash += 150; save(); 
+                } else { 
+                    st.hp = Math.max(0, st.hp - 25); 
+                    alert("Resposta Incorreta! -25% de Durabilidade.");
+                }
                 document.getElementById('scr-quiz').classList.add('hide'); st.act = true; st.qT = 0;
             };
             box.appendChild(b);
@@ -189,7 +213,9 @@
             
             st.obs.forEach(o => {
                 o.y += st.v;
-                if(Math.abs(o.x - st.px) < 45 && Math.abs(o.y - (canvas.height-180)) < 80) { st.hp -= 0.5; st.v *= 0.9; }
+                if(Math.abs(o.x - st.px) < 45 && Math.abs(o.y - (canvas.height-180)) < 85) { 
+                    st.hp -= 0.5; st.v *= 0.95; 
+                }
             });
 
             if(st.hp <= 0) { 
@@ -200,30 +226,36 @@
             if(st.d >= 10000) {
                 st.act = false; st.cash += 500; save();
                 document.getElementById('res-title').innerText = "VITÓRIA";
-                document.getElementById('res-msg').innerText = "Você chegou! +$500";
+                document.getElementById('res-msg').innerText = "Parabéns, Capitão! +$500";
                 document.getElementById('scr-res').classList.remove('hide');
             }
-            refresh();
+            refreshHUD();
         }
 
-        ctx.fillStyle = '#2d5a27'; ctx.fillRect(0,0,canvas.width,canvas.height);
-        ctx.fillStyle = '#222'; ctx.fillRect(150,0,300,canvas.height);
-        ctx.setLineDash([40,40]); ctx.strokeStyle='white'; ctx.beginPath(); ctx.moveTo(300, -100+st.roadY); ctx.lineTo(300, canvas.height+100+st.roadY); ctx.stroke();
+        ctx.fillStyle = '#2d5a27'; ctx.fillRect(0,0,canvas.width,canvas.height); // Grass
+        ctx.fillStyle = '#222'; ctx.fillRect(150,0,300,canvas.height); // Road
         
-        st.obs.forEach(o => ctx.drawImage(IMGS[o.t], o.x-25, o.y, 50, 90));
-        ctx.drawImage(IMGS[CARS[st.sel].t], st.px-25, canvas.height-180, 50, 90);
+        ctx.setLineDash([40,40]); ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.beginPath(); ctx.moveTo(300, -100+st.roadY); ctx.lineTo(300, canvas.height+100+st.roadY); ctx.stroke();
+        
+        st.obs.forEach(o => drawCar(ctx, o.x, o.y, o.c, o.t, false));
+        drawCar(ctx, st.px, canvas.height-180, CARS[st.sel].c, CARS[st.sel].type, true);
         
         requestAnimationFrame(loop);
     }
 
-    document.getElementById('go-race').onclick = () => { document.getElementById('scr-menu').classList.add('hide'); init(); st.act = true; st.lt = performance.now(); };
+    // INTERFACE
+    document.getElementById('go-race').onclick = () => { 
+        audio.play().catch(()=>{}); 
+        document.getElementById('scr-menu').classList.add('hide'); 
+        st.hp=100; st.d=0; st.v=0; st.px=300; spawnObs(); st.act = true; st.lt = performance.now(); 
+    };
     document.getElementById('go-garage').onclick = () => {
         const list = document.getElementById('car-list'); list.innerHTML = '';
         CARS.forEach(v => {
             const has = st.owned.includes(v.id); const sel = st.sel === v.id;
             const div = document.createElement('div');
             div.style = "background:#111; padding:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; border:1px solid "+(sel?'var(--safety-cyan)':'#333');
-            div.innerHTML = `<div><b>${v.n}</b><br><small>${has?'ADQUIRIDO':'$'+v.p}</small></div><button class="btn" style="padding:6px 12px; font-size:0.8rem">${has?(sel?'EQUIPADO':'ESCOLHER'):'COMPRAR'}</button>`;
+            div.innerHTML = `<div><b>${v.n}</b><br><small>${has?'COLECIONADO':'$'+v.p}</small></div><button class="btn" style="padding:6px 12px; font-size:0.8rem">${has?(sel?'EQUIPADO':'ESCOLHER'):'COMPRAR'}</button>`;
             div.querySelector('button').onclick = () => {
                 if(!has && st.cash >= v.p) { st.cash -= v.p; st.owned.push(v.id); save(); document.getElementById('go-garage').click(); }
                 else if(has) { st.sel = v.id; save(); document.getElementById('go-garage').click(); }
@@ -233,12 +265,12 @@
         document.getElementById('scr-garage').classList.remove('hide');
     };
     document.getElementById('exit-garage').onclick = () => document.getElementById('scr-garage').classList.add('hide');
-    document.getElementById('retry').onclick = () => { document.getElementById('scr-res').classList.add('hide'); init(); st.act = true; st.lt = performance.now(); };
+    document.getElementById('retry').onclick = () => { document.getElementById('scr-res').classList.add('hide'); st.hp=100; st.d=0; st.v=0; st.px=300; spawnObs(); st.act = true; st.lt = performance.now(); };
     document.getElementById('back-menu').onclick = () => { document.getElementById('scr-res').classList.add('hide'); document.getElementById('scr-menu').classList.remove('hide'); };
 
-    function start() { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; refresh(); loop(performance.now()); }
-    window.onresize = start;
-    start();
+    function boot() { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; refreshHUD(); loop(performance.now()); }
+    window.onresize = boot;
+    boot();
 
 </script>
 </body>
