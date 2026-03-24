@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Own the Road v3.4 | FINAL UPDATE</title>
+    <title>Own the Road v3.4 | FINAL VERSION</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@900&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -74,11 +74,20 @@
         }
         .btn:hover { background: #ff1100; transform: scale(1.05); }
 
+        /* GIANT BANNER TO PROVE IT CHANGED */
+        #proof-banner {
+            position: absolute; top: 0; left: 0; width: 100%; background: red;
+            color: yellow; font-size: 0.8rem; font-weight: 900; padding: 5px; text-align: center;
+            z-index: 1000; animation: flash 1s infinite;
+        }
+        @keyframes flash { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
     </style>
 </head>
 <body>
 
 <div id="game-area">
+    <div id="proof-banner">⚠️ ATUAIZAÇÃO 3.4 CARREGADA COM SUCESSO ⚠️ Se nada mudou, dê CTRL+F5!</div>
     <canvas id="gameCanvas"></canvas>
 
     <div class="hud-overlay">
@@ -126,7 +135,7 @@
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
-    // CAR ASSETS (SVGs as Data URIs)
+    // CAR ASSETS
     const CAR_IMAGES = {
         hatch: `data:image/svg+xml;base64,${btoa('<svg width="50" height="90" viewBox="0 0 50 90" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="10" width="40" height="70" rx="10" fill="gray"/><rect x="8" y="25" width="34" height="15" rx="2" fill="lightblue" opacity="0.6"/><rect x="10" y="55" width="30" height="15" rx="5" fill="black"/><rect x="0" y="20" width="5" height="10" rx="2" fill="gray"/><rect x="45" y="20" width="5" height="10" rx="2" fill="gray"/></svg>')}`,
         sedan: `data:image/svg+xml;base64,${btoa('<svg width="50" height="90" viewBox="0 0 50 90" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="5" width="40" height="80" rx="8" fill="blue"/><rect x="8" y="25" width="34" height="20" rx="3" fill="skyblue" opacity="0.5"/><rect x="10" y="65" width="30" height="10" rx="2" fill="skyblue" opacity="0.5"/><rect x="2" y="20" width="4" height="12" fill="blue"/><rect x="44" y="20" width="4" height="12" fill="blue"/></svg>')}`,
@@ -141,7 +150,6 @@
         IMGS[k].src = CAR_IMAGES[k];
     }
 
-    // VEHICLES TABLE
     const VEHICLES = [
         { id: 0, n: "Compacto", p: 0, s: 7, a: 0.12, t: 'hatch' },
         { id: 1, n: "Sedan Premium", p: 500, s: 10, a: 0.20, t: 'sedan' },
@@ -250,14 +258,12 @@
                 document.getElementById('scr-end').classList.remove('hide');
             }
 
-            // HUD
             document.getElementById('hp-val').style.width = game.hp + '%';
             document.getElementById('dist-display').innerText = Math.floor(game.dist / 10);
             document.getElementById('speed-num').innerText = Math.abs(Math.floor(game.v * 12));
             document.getElementById('player-point').style.bottom = Math.min(295, (game.dist/10000)*295) + 'px';
         }
 
-        // DRAW
         ctx.fillStyle = '#1b4d0e'; ctx.fillRect(0,0,canvas.width,canvas.height); // Grass
         ctx.fillStyle = '#222'; ctx.fillRect(150, 0, 300, canvas.height); // Road
         ctx.fillStyle = '#fff'; ctx.fillRect(150,0,6,canvas.height); ctx.fillRect(444,0,6,canvas.height);
@@ -266,7 +272,6 @@
         ctx.beginPath(); ctx.moveTo(300, -120 + game.offset); ctx.lineTo(300, canvas.height+120+game.offset);
         ctx.stroke(); ctx.setLineDash([]);
 
-        // DRAW ASSET CARS
         game.obs.forEach(o => {
             const img = IMGS[o.t];
             ctx.drawImage(img, o.x - 22, o.y, 44, 90);
@@ -278,7 +283,6 @@
         requestAnimationFrame(loop);
     }
 
-    // INTERFACE
     document.getElementById('start-btn').onclick = () => {
         document.getElementById('scr-start').classList.add('hide'); spawn();
         game.active = true; game.lastTime = performance.now();
