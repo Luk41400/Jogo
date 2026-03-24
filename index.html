@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Own the Road v3.8 | PAUSE & QUIZ UPDATE</title>
+    <title>Own the Road v3.9 | DUAL MUSIC UPDATE</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@900&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -33,7 +33,8 @@
 
         /* CONTROLS */
         .ctrl-hud { position:absolute; top:20px; right:20px; z-index:50; display:flex; gap:10px; }
-        .btn-icon { background:rgba(0,0,0,0.8); color:white; border:1px solid #555; width:40px; height:40px; border-radius:50%; cursor:pointer; font-size:1.2rem; display:flex; align-items:center; justify-content:center; }
+        .btn-icon { background:rgba(0,0,0,0.8); color:white; border:1px solid #555; width:44px; height:44px; border-radius:50%; cursor:pointer; font-size:1.1rem; display:flex; align-items:center; justify-content:center; transition: 0.2s; }
+        .btn-icon:hover { transform: scale(1.1); background: #222; }
         
         #speedo {
             position:absolute; bottom:20px; left:20px; width:90px; height:90px;
@@ -50,10 +51,12 @@
         .btn { background:var(--f1-red); color:white; border:none; padding:12px 25px; font-weight:900; font-size:1rem; cursor:pointer; border-radius:5px; margin:8px; }
         .btn:hover { background: #ff0000; }
 
-        /* QUIZ ENHANCEMENTS */
+        /* QUIZ */
         #quiz-card { background:#000; border:2px solid var(--safety-cyan); padding:25px; border-radius:15px; width:90%; text-align:center; transition: background 0.5s; }
         #q-timer { font-size:1.5rem; color:var(--caution-yellow); margin-bottom:15px; font-family: 'Outfit'; }
-        .quiz-option { width:100%; margin-bottom:10px; transition: background 0.3s; }
+
+        /* MUSIC INFO */
+        #music-info { position: absolute; bottom: 120px; left: 20px; font-size: 0.7rem; color: #888; font-weight: 700; text-transform: uppercase; z-index: 10; opacity: 0; transition: 0.5s; }
 
         #music-frame { position: absolute; top: -100px; left: -100px; width: 1px; height: 1px; visibility: hidden; pointer-events: none; }
 
@@ -71,18 +74,21 @@
         <div class="stat">DURABILIDADE <div class="hp-cont"><div id="hp-bar"></div></div></div>
     </div>
 
-    <!-- PAUSE & MUTE -->
+    <!-- PAUSE, MUTE & MUSIC SWITCH -->
     <div class="ctrl-hud">
-        <button id="mute-btn" class="btn-icon">🔊</button>
-        <button id="pause-btn" class="btn-icon">⏸️</button>
+        <button id="switch-music" class="btn-icon" title="Trocar Música">🎵</button>
+        <button id="mute-btn" class="btn-icon" title="Mutar Áudio">🔊</button>
+        <button id="pause-btn" class="btn-icon" title="Pausar Jogo">⏸️</button>
     </div>
+
+    <div id="music-info">TRACK: Back in Black</div>
 
     <div id="speedo"><div id="sp-num">0</div><div style="font-size:0.5rem">KM/H</div></div>
 
     <!-- MAIN MENU -->
     <div id="scr-menu" class="screen">
-        <h1 style="font-size:3rem; color:var(--f1-red); margin-bottom:10px;">OWN THE ROAD</h1>
-        <p style="color:#666; margin-bottom:30px; font-weight:700;">PROGRESSE COM SEGURANÇA</p>
+        <h1 style="font-size:3rem; color:var(--f1-red); margin-bottom:10px; text-shadow: 0 0 15px var(--f1-red);">OWN THE ROAD</h1>
+        <p style="color:#666; margin-bottom:30px; font-weight:700;">DUAL ROCK EDITION</p>
         <button class="btn" id="go-race">INICIAR CORRIDA</button>
         <button class="btn" style="background:#444" id="go-garage">GARAGEM</button>
     </div>
@@ -114,7 +120,7 @@
     <!-- PAUSE OVERLAY -->
     <div id="scr-pause" class="screen hide" style="background:rgba(0,0,0,0.6)">
         <h1 style="color:var(--safety-cyan); font-size:3rem;">PAUSADO</h1>
-        <button class="btn" id="resume-btn">REPETIR JOGO</button>
+        <button class="btn" id="resume-btn" style="background: #333">CONTINUAR JOGO</button>
     </div>
 </div>
 
@@ -122,24 +128,44 @@
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
-    // YouTube for Back In Black
+    // MUSIC CONFIG
+    const PLAYLIST = [
+        { id: 'pAgnJDJN4VA', name: 'AC/DC - Back in Black' },
+        { id: 'egMWlD3fLJ8', name: 'Steppenwolf - Born to be Wild' }
+    ];
+    let curTrack = 0;
     let player;
     let isMuted = false;
+
+    // YT API
     const tag = document.createElement('script');
     tag.src = "https://www.youtube.com/iframe_api";
     document.body.appendChild(tag);
 
     function onYouTubeIframeAPIReady() {
         player = new YT.Player('music-frame', {
-            height: '1', width: '1', videoId: 'pAgnJDJN4VA',
-            playerVars: { 'autoplay': 0, 'loop': 1, 'playlist': 'pAgnJDJN4VA' }
+            height: '1', width: '1',
+            videoId: PLAYLIST[curTrack].id,
+            playerVars: { 'autoplay': 0, 'loop': 1, 'playlist': PLAYLIST[curTrack].id }
         });
+    }
+
+    function switchMusic() {
+        curTrack = (curTrack + 1) % PLAYLIST.length;
+        if(player) {
+            player.loadVideoById(PLAYLIST[curTrack].id);
+            if(isMuted) player.mute(); else player.unMute();
+        }
+        const info = document.getElementById('music-info');
+        info.innerText = "TRACK: " + PLAYLIST[curTrack].name;
+        info.style.opacity = 1;
+        setTimeout(() => info.style.opacity = 0, 3000);
     }
 
     // CAR MODELS
     const CARS = [
         { id: 0, n: "Hatch Pop", p: 0, s: 7, a: 0.12, c: "#999", t: 'hatch' },
-        { id: 1, n: "Sedan Premium", p: 400, s: 10, a: 0.2, c: "#336", t: 'sedan' },
+        { id: 1, n: "Sedan Premium", p: 400, s: 10, a: 0.2, c: "#33c", t: 'sedan' },
         { id: 2, n: "SUV Adventure", p: 1000, s: 13, a: 0.25, c: "#262", t: 'suv' },
         { id: 3, n: "Esportivo GT", p: 2500, s: 19, a: 0.45, c: "#e1a100", t: 'sport' },
         { id: 4, n: "F1 MONOPOSTO", p: 6000, s: 28, a: 0.8, c: "#e10600", t: 'f1' }
@@ -147,31 +173,31 @@
 
     const QUIZ_LIST = [
         { q: "Qual a distância segura do ciclista?", a: "1,5 metro", o: ["0,5m", "10m", "Colado"] },
-        { q: "Sinal Amarelo significa:", a: "Parar se puder", o: ["Acelerando", "Buzinar", "Passar rápido"] },
+        { q: "Sinal Amarelo significa:", a: "Parar se puder", o: ["Acelerar", "Buzinar", "Passar rápido"] },
         { q: "Álcool e Direção?", a: "Jamais!", o: ["Pode 1 taça", "Ok fins de semana", "Só rodovia"] }
     ];
 
     let game = {
-        m: parseInt(localStorage.getItem('otr_38_m')) || 0,
-        o: JSON.parse(localStorage.getItem('otr_38_o')) || [0],
-        sel: parseInt(localStorage.getItem('otr_38_s')) || 0,
+        m: parseInt(localStorage.getItem('otr_39_m')) || 0,
+        o: JSON.parse(localStorage.getItem('otr_39_o')) || [0],
+        sel: parseInt(localStorage.getItem('otr_39_s')) || 0,
         hp: 100, d: 0, v: 0, act: false, px: 300, offset: 0, obs: [], qClock: 0, lt: 0, paused: false
     };
 
     const keys = {}; window.onkeydown = e => keys[e.key] = true; window.onkeyup = e => keys[e.key] = false;
 
-    function save() { localStorage.setItem('otr_38_m', game.m); localStorage.setItem('otr_38_o', JSON.stringify(game.o)); localStorage.setItem('otr_38_s', game.sel); }
+    function save() { localStorage.setItem('otr_39_m', game.m); localStorage.setItem('otr_39_o', JSON.stringify(game.o)); localStorage.setItem('otr_39_s', game.sel); }
     function syncHUD() { 
         document.getElementById('m-val').innerText = '$' + game.m;
         document.getElementById('hp-bar').style.width = game.hp + '%';
         document.getElementById('sp-num').innerText = Math.abs(Math.floor(game.v * 12));
     }
 
-    function drawVehicle(ctx, x, y, color, type) {
+    function drawCard(ctx, x, y, color, type) {
         ctx.save(); ctx.translate(x, y); ctx.fillStyle = color;
         if(type === 'f1') {
-            ctx.beginPath(); ctx.roundRect(-10, -50, 20, 35, 3); ctx.fill(); // Case
-            ctx.beginPath(); ctx.roundRect(-22, -15, 44, 45, 8); ctx.fill(); // Center
+            ctx.beginPath(); ctx.roundRect(-10, -50, 20, 35, 3); ctx.fill();
+            ctx.beginPath(); ctx.roundRect(-22, -15, 44, 45, 8); ctx.fill();
             ctx.fillStyle = "#111"; ctx.fillRect(-35, -45, 70, 12); ctx.fillRect(-35, 25, 70, 15);
         } else {
             let w = type==='suv'?50:44; ctx.beginPath(); ctx.roundRect(-w/2, -45, w, 90, 10); ctx.fill();
@@ -189,7 +215,7 @@
         const timerTxt = document.getElementById('q-timer');
         const qBox = document.getElementById('q-box');
         document.getElementById('q-txt').innerText = q.q;
-        qBox.innerHTML = ''; card.style.background = "#000";
+        qBox.innerHTML = ''; card.style.background = "#000"; card.style.border = "2px solid var(--safety-cyan)";
         
         let timeLeft = 10;
         timerTxt.innerText = timeLeft;
@@ -198,10 +224,12 @@
             clearInterval(quizInterval);
             if(isCorrect) {
                 card.style.background = "var(--correct-green)";
+                card.style.border = "2px solid var(--correct-green)";
                 if(btn) btn.style.background = "var(--correct-green)";
                 game.m += 200; save();
             } else {
                 card.style.background = "var(--wrong-red)";
+                card.style.border = "2px solid var(--wrong-red)";
                 if(btn) btn.style.background = "var(--wrong-red)";
                 game.hp = Math.max(0, game.hp - 30);
             }
@@ -226,9 +254,7 @@
         document.getElementById('scr-quiz').classList.remove('hide');
     }
 
-    function spawnObs() { game.obs = []; for(let i=0; i<40; i++) game.obs.push({ x: 180 + Math.random()*240, y: -(i*800)-1500, c: '#444', t: 'sedan' }); }
-
-    function run(now) {
+    function loop(now) {
         if(game.act && !game.paused) {
             const dt = (now - game.lt)/1000; game.lt = now;
             const c = CARS[game.sel];
@@ -266,29 +292,27 @@
         ctx.fillStyle = '#222'; ctx.fillRect(150,0,300,canvas.height); // Road
         ctx.setLineDash([40,40]); ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.beginPath(); ctx.moveTo(300, -100+game.offset); ctx.lineTo(300, canvas.height+100+game.offset); ctx.stroke();
         
-        game.obs.forEach(o => drawVehicle(ctx, o.x, o.y, o.c, o.t));
-        drawVehicle(ctx, game.px, canvas.height-180, CARS[game.sel].c, CARS[game.sel].t);
-        requestAnimationFrame(run);
+        game.obs.forEach(o => drawCard(ctx, o.x, o.y, o.c, o.t));
+        drawCard(ctx, game.px, canvas.height-180, CARS[game.sel].c, CARS[game.sel].t);
+        requestAnimationFrame(loop);
     }
 
+    // BUTTON EVENTS
     document.getElementById('mute-btn').onclick = () => {
         isMuted = !isMuted;
         if(player) isMuted ? player.mute() : player.unMute();
         document.getElementById('mute-btn').innerText = isMuted ? "🔇" : "🔊";
     };
-    document.getElementById('pause-btn').onclick = () => {
-        game.paused = true;
-        document.getElementById('scr-pause').classList.remove('hide');
-    };
-    document.getElementById('resume-btn').onclick = () => {
-        game.paused = false;
-        document.getElementById('scr-pause').classList.add('hide');
-    };
+    document.getElementById('pause-btn').onclick = () => { game.paused = true; document.getElementById('scr-pause').classList.remove('hide'); };
+    document.getElementById('resume-btn').onclick = () => { game.paused = false; document.getElementById('scr-pause').classList.add('hide'); };
+    document.getElementById('switch-music').onclick = () => switchMusic();
 
     document.getElementById('go-race').onclick = () => {
         if(player) player.playVideo();
         document.getElementById('scr-menu').classList.add('hide');
-        game.hp=100; game.d=0; game.v=0; game.px=300; spawnObs(); game.act = true; game.lt = performance.now();
+        game.hp=100; game.d=0; game.v=0; game.px=300; game.obs=[];
+        for(let i=0; i<40; i++) game.obs.push({ x: 180 + Math.random()*240, y: -(i*800)-1500, c: '#444', t: 'sedan' });
+        game.act = true; game.lt = performance.now();
     };
     document.getElementById('go-garage').onclick = () => {
         const list = document.getElementById('car-list'); list.innerHTML = '';
@@ -306,10 +330,10 @@
         document.getElementById('scr-garage').classList.remove('hide');
     };
     document.getElementById('exit-garage').onclick = () => document.getElementById('scr-garage').classList.add('hide');
-    document.getElementById('retry').onclick = () => { document.getElementById('scr-res').classList.add('hide'); game.hp=100; game.d=0; game.v=0; game.px=300; spawnObs(); game.act = true; game.lt = performance.now(); };
+    document.getElementById('retry').onclick = () => { document.getElementById('scr-res').classList.add('hide'); game.hp=100; game.d=0; game.v=0; game.px=300; game.act = true; game.lt = performance.now(); };
     document.getElementById('back-menu').onclick = () => { document.getElementById('scr-res').classList.add('hide'); document.getElementById('scr-menu').classList.remove('hide'); };
 
-    function start() { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; syncHUD(); run(performance.now()); }
+    function start() { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; syncHUD(); loop(performance.now()); }
     window.onresize = start;
     start();
 
