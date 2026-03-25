@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Own the Road v3.15 | VOLUME CONTROL</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@900&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+    <title>Own the Road v3.14 | BALANCED UPDATE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@900&family=Space+Grotesk:wght@700&display=swap"
+        rel="stylesheet">
     <style>
         :root {
             --f1-red: #E10600;
@@ -14,292 +16,553 @@
             --dark-bg: #030303;
         }
 
-        * { margin:0; padding:0; box-sizing:border-box; user-select:none; }
-        body { background: var(--dark-bg); color:white; font-family:'Space Grotesk', sans-serif; height:100vh; overflow:hidden; display:flex; justify-content:center; align-items:center; }
-        
-        #game-area {
-            position:relative; width:100vw; height:100vh; max-width:600px; max-height:900px;
-            background:#111; border:4px solid #333; overflow:hidden;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
         }
 
-        canvas { display:block; width:100%; height:100%; }
+        body {
+            background: var(--dark-bg);
+            color: white;
+            font-family: 'Space Grotesk', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #game-area {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            max-width: 600px;
+            max-height: 900px;
+            background: #111;
+            border: 4px solid #333;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
 
         /* HUD */
-        .hud { position:absolute; top:20px; left:20px; right:20px; z-index:10; pointer-events:none; display:flex; flex-direction:column; gap:8px; }
-        .stat-badge { background:rgba(0,0,0,0.85); padding:10px 15px; border-radius:8px; border-left:4px solid var(--safety-cyan); width:fit-content; border: 1px solid rgba(255,255,255,0.1); }
-        .bar-cont { width:100px; height:8px; background:#333; border-radius:4px; overflow:hidden; margin-top:5px; }
-        #hp-bar { width:100%; height:100%; background:#0f0; transition:0.3s; }
-        #nitro-bar { width:100%; height:100%; background:var(--nitro-blue); transition: 0.1s linear; }
+        .hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            z-index: 10;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
 
-        .ctrl-hud { position:absolute; top:20px; right:20px; z-index:50; display:flex; align-items:center; gap:10px; }
-        .btn-icon { background:rgba(0,0,0,0.8); color:white; border:1px solid #555; width:44px; height:44px; border-radius:50%; cursor:pointer; font-size:1.1rem; display:flex; align-items:center; justify-content:center; }
-        
-        /* Volume Slider */
-        #vol-cont { background:rgba(0,0,0,0.8); padding:5px 12px; border-radius:20px; border:1px solid #555; display:flex; align-items:center; gap:8px; height:44px; }
-        #vol-slider { width:80px; height:4px; cursor:pointer; accent-color: var(--safety-cyan); }
+        .stat-badge {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--safety-cyan);
+            width: fit-content;
+        }
+
+        .bar-cont {
+            width: 100px;
+            height: 8px;
+            background: #333;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        #hp-bar {
+            width: 100%;
+            height: 100%;
+            background: #0f0;
+            transition: 0.3s;
+        }
+
+        #nitro-bar {
+            width: 100%;
+            height: 100%;
+            background: var(--nitro-blue);
+            transition: 0.1s linear;
+        }
+
+        .ctrl-hud {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 50;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-icon {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            border: 1px solid #555;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+
+        /* VOLUME SLIDER SYSTEM */
+        .vol-wrapper {
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #444;
+            height: 44px;
+            width: 44px; /* Start as circle */
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            cursor: pointer;
+        }
+
+        .vol-wrapper.active {
+            width: 160px; /* Expand to show slider */
+            padding-right: 15px;
+            border-color: var(--safety-cyan);
+        }
+
+        .vol-icon {
+            min-width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            z-index: 2;
+        }
+
+        .vol-slider {
+            flex: 1;
+            height: 4px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #333;
+            border-radius: 2px;
+            outline: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            cursor: pointer;
+        }
+
+        .vol-wrapper.active .vol-slider {
+            opacity: 1;
+        }
+
+        .vol-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--safety-cyan);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--safety-cyan);
+        }
+
+        .vol-slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: var(--safety-cyan);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--safety-cyan);
+            border: none;
+        }
 
         #speedo {
-            position:absolute; bottom:25px; left:20px; width:100px; height:100px;
-            background:rgba(0,0,0,0.8); border-radius:50%; border:2px solid #555;
-            display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:10;
+            position: absolute;
+            bottom: 25px;
+            left: 20px;
+            width: 100px;
+            height: 100px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 50%;
+            border: 2px solid #555;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
         }
-        #sp-num { font-size:1.6rem; font-weight:900; color:var(--safety-cyan); font-family: 'Outfit'; }
 
-        #track-map { position:absolute; top:180px; right:20px; width:10px; height:300px; background:rgba(255,255,255,0.1); border-radius:5px; }
-        #p-marker { position:absolute; left:-10px; width:30px; height:6px; background:var(--f1-red); border-radius:3px; box-shadow: 0 0 10px var(--f1-red); }
+        #sp-num {
+            font-size: 1.6rem;
+            font-weight: 900;
+            color: var(--safety-cyan);
+            font-family: 'Outfit';
+        }
+
+        #track-map {
+            position: absolute;
+            top: 180px;
+            right: 20px;
+            width: 10px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+
+        #p-marker {
+            position: absolute;
+            left: -10px;
+            width: 30px;
+            height: 6px;
+            background: var(--f1-red);
+            border-radius: 3px;
+            box-shadow: 0 0 10px var(--f1-red);
+        }
 
         .screen {
-            position:absolute; top:0; left:0; width:100%; height:100%;
-            background:rgba(0,0,0,0.97); z-index:100; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:30px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.97);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
         }
-        .hide { display:none !important; }
-        .btn { background:var(--f1-red); color:white; border:none; padding:12px 25px; font-weight:900; font-size:1rem; cursor:pointer; border-radius:5px; margin:8px; transition: transform 0.2s; }
-        .btn:hover { background: #ff0000; transform: scale(1.05); }
 
-        #music-frame { position: absolute; top: -100px; left: -100px; width: 1px; height: 1px; visibility: hidden; pointer-events: none; }
+        .hide {
+            display: none !important;
+        }
 
+        .btn {
+            background: var(--f1-red);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-weight: 900;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 8px;
+        }
+
+        .btn:hover {
+            background: #ff0000;
+        }
+
+        /* TUTORIAL (CLASSIC DESIGN) */
+        .tut-box {
+            text-align: left;
+            background: #000;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #444;
+            margin: 20px 0;
+            max-width: 90%;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+
+        .tut-box b {
+            color: var(--safety-cyan);
+        }
+
+        #music-frame {
+            position: absolute;
+            top: -100px;
+            left: -100px;
+            width: 1px;
+            height: 1px;
+            visibility: hidden;
+            pointer-events: none;
+        }
     </style>
 </head>
+
 <body>
 
-<div id="music-frame"></div>
+    <div id="music-frame"></div>
 
-<div id="game-area">
-    <canvas id="gameCanvas"></canvas>
+    <div id="game-area">
+        <canvas id="gameCanvas"></canvas>
 
-    <div class="hud">
-        <div class="stat-badge">SALDO: <span id="m-val" style="color:var(--caution-yellow)">$0</span></div>
-        <div class="stat-badge">DURABILIDADE <div class="bar-cont"><div id="hp-bar"></div></div></div>
-        <div class="stat-badge">NITRO <div class="bar-cont"><div id="nitro-bar"></div></div></div>
-        <div class="stat-badge">META: <span id="dist-txt">0</span>m / 2000m</div>
-    </div>
-
-    <div class="ctrl-hud">
-        <div id="vol-cont">
-            <span>🔊</span>
-            <input type="range" id="vol-slider" min="0" max="100" value="50">
+        <div class="hud">
+            <div class="stat-badge">SALDO: <span id="m-val" style="color:var(--caution-yellow)">$0</span></div>
+            <div class="stat-badge">DURABILIDADE <div class="bar-cont">
+                    <div id="hp-bar"></div>
+                </div>
+            </div>
+            <div class="stat-badge">NITRO <div class="bar-cont">
+                    <div id="nitro-bar"></div>
+                </div>
+            </div>
+            <div class="stat-badge">META: <span id="dist-txt">0</span>m / 2000m</div>
         </div>
-        <button id="switch-music" class="btn-icon">🎵</button>
-        <button id="pause-icon" class="btn-icon">⏸️</button>
-    </div>
 
-    <div id="track-map"><div id="p-marker"></div></div>
-    <div id="speedo"><div id="sp-num">0</div><div style="font-size:0.5rem">KM/H</div></div>
-
-    <!-- MAIN MENU -->
-    <div id="scr-menu" class="screen">
-        <h1 style="font-size:3.5rem; color:var(--f1-red); margin-bottom:10px; text-shadow:0 0 15px var(--f1-red);">OWN THE ROAD</h1>
-        <button class="btn" id="start-btn">INICIAR CORRIDA</button>
-        <button class="btn" style="background:#444" id="tut-btn">COMO JOGAR</button>
-        <button class="btn" style="background:#444" id="garage-btn">GARAGEM</button>
-    </div>
-
-    <!-- TUTORIAL -->
-    <div id="scr-tut" class="screen hide">
-        <h1 style="color:var(--safety-cyan)">TUTORIAL</h1>
-        <div style="text-align: left; background: #000; padding: 20px; border-radius: 10px; border: 1px solid #444; margin: 20px 0; max-width: 90%; font-size: 0.85rem; line-height: 1.6;">
-            • <b>W / ⬆️</b>: Acelerar (Ativa cronômetros)<br>
-            • <b>S / ⬇️</b>: Freio / Marcha Ré<br>
-            • <b>A - D / ⬅️ - ➡️</b>: Direção Lateral<br>
-            • <b>ESPAÇO</b>: Ativar <b>NITRO</b> (Boost!)<br>
-            • <b>QUIZ</b>: Acerte em 10s para ganhar $ e Vida!<br>
-            • <b>GARAGEM</b>: Compre carros em ordem para evoluir.
+        <div class="ctrl-hud">
+            <button id="switch-music" class="btn-icon">🎵</button>
+            <div id="vol-ctrl" class="vol-wrapper">
+                <div id="mute-icon" class="vol-icon">🔊</div>
+                <input type="range" id="vol-slider" class="vol-slider" min="0" max="100" value="100">
+            </div>
+            <button id="pause-icon" class="btn-icon">⏸️</button>
         </div>
-        <button class="btn" id="exit-tut">VOLTAR</button>
-    </div>
 
-    <!-- GARAGE -->
-    <div id="scr-garage" class="screen hide">
-        <h1 style="color:var(--safety-cyan)">GARAGEM</h1>
-        <div id="car-list" style="width:100%; max-height:60vh; overflow-y:auto; margin:15px 0;"></div>
-        <button class="btn" id="exit-garage">VOLTAR</button>
-    </div>
+        <div id="track-map">
+            <div id="p-marker"></div>
+        </div>
+        <div id="speedo">
+            <div id="sp-num">0</div>
+            <div style="font-size:0.5rem">KM/H</div>
+        </div>
 
-    <!-- QUIZ -->
-    <div id="scr-quiz" class="screen hide">
-        <div style="background:#111; border:2px solid var(--safety-cyan); padding:30px; border-radius:15px; width:90%; text-align:center;">
-            <div id="q-timer" style="font-size:1.5rem; color:var(--caution-yellow); margin-bottom:15px;">10</div>
-            <h2 id="q-txt" style="margin-bottom:25px;">?</h2>
-            <div id="q-box" style="display:flex; flex-direction:column; gap:10px;"></div>
+        <!-- MAIN MENU -->
+        <div id="scr-menu" class="screen">
+            <h1 style="font-size:3.5rem; color:var(--f1-red); margin-bottom:10px; text-shadow:0 0 15px var(--f1-red);">
+                OWN THE ROAD</h1>
+            <button class="btn" id="start-btn">INICIAR CORRIDA</button>
+            <button class="btn" style="background:#444" id="tut-btn">COMO JOGAR</button>
+            <button class="btn" style="background:#444" id="garage-btn">GARAGEM</button>
+        </div>
+
+        <!-- TUTORIAL (REVERTED DESIGN) -->
+        <div id="scr-tut" class="screen hide">
+            <h1 style="color:var(--safety-cyan)">TUTORIAL</h1>
+            <div class="tut-box">
+                • <b>W / ⬆️</b>: Acelerar (Ativa cronômetros)<br>
+                • <b>S / ⬇️</b>: Freio / Marcha Ré<br>
+                • <b>A - D / ⬅️ - ➡️</b>: Direção Lateral<br>
+                • <b>ESPAÇO</b>: Ativar <b>NITRO</b> (Boost!)<br>
+                • <b>QUIZ</b>: Acerte em 10s para ganhar $ e Vida!<br>
+                • <b>GARAGEM</b>: Compre carros em ordem para evoluir.
+            </div>
+            <button class="btn" id="exit-tut">VOLTAR</button>
+        </div>
+
+        <!-- GARAGE -->
+        <div id="scr-garage" class="screen hide">
+            <h1 style="color:var(--safety-cyan)">GARAGEM</h1>
+            <div id="car-list" style="width:100%; max-height:60vh; overflow-y:auto; margin:15px 0;"></div>
+            <button class="btn" id="exit-garage">VOLTAR</button>
+        </div>
+
+        <!-- QUIZ -->
+        <div id="scr-quiz" class="screen hide">
+            <div
+                style="background:#111; border:2px solid var(--safety-cyan); padding:30px; border-radius:15px; width:90%; text-align:center;">
+                <div id="q-timer" style="font-size:1.5rem; color:var(--caution-yellow); margin-bottom:15px;">10</div>
+                <h2 id="q-txt" style="margin-bottom:25px;">?</h2>
+                <div id="q-box" style="display:flex; flex-direction:column; gap:10px;"></div>
+            </div>
+        </div>
+
+        <!-- RESULT -->
+        <div id="scr-res" class="screen hide">
+            <h1 id="res-title">FIM</h1>
+            <p id="res-msg" style="margin:20px 0; color:#888;"></p>
+            <button class="btn" id="retry-btn">REPETIR</button>
+            <button class="btn" style="background:#444" id="res-menu">MENU</button>
+        </div>
+
+        <!-- PAUSE -->
+        <div id="scr-pause" class="screen hide" style="background:rgba(0,0,0,0.6)">
+            <h1 style="color:var(--safety-cyan); font-size:3rem;">PAUSADO</h1>
+            <button class="btn" id="resume-btn" style="background: #333">CONTINUAR</button>
+            <button class="btn" id="restart-btn">REINICIAR</button>
+            <button class="btn" id="back-menu" style="background:#444">MENU PRINCIPAL</button>
         </div>
     </div>
 
-    <!-- RESULT -->
-    <div id="scr-res" class="screen hide">
-        <h1 id="res-title">FIM</h1>
-        <p id="res-msg" style="margin:20px 0; color:#888;"></p>
-        <button class="btn" id="retry-btn">REPETIR</button>
-        <button class="btn" style="background:#444" id="res-menu">MENU</button>
-    </div>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
 
-    <!-- PAUSE -->
-    <div id="scr-pause" class="screen hide" style="background:rgba(0,0,0,0.6)">
-        <h1 style="color:var(--safety-cyan); font-size:3rem;">PAUSADO</h1>
-        <button class="btn" id="resume-btn" style="background: #333">CONTINUAR</button>
-        <button class="btn" id="restart-btn">REINICIAR</button>
-        <button class="btn" id="back-menu" style="background:#444">MENU PRINCIPAL</button>
-    </div>
-</div>
+        const PLAYLIST = [{ id: 'pAgnJDJN4VA' }, { id: 'egMWlD3fLJ8' }];
+        let cTrack = 0; let player; let isMuted = false;
 
-<script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
+        const tag = document.createElement('script'); tag.src = "https://www.youtube.com/iframe_api"; document.body.appendChild(tag);
+        function onYouTubeIframeAPIReady() { player = new YT.Player('music-frame', { height: '1', width: '1', videoId: PLAYLIST[cTrack].id, playerVars: { 'autoplay': 0, 'loop': 1, 'playlist': PLAYLIST[cTrack].id } }); }
 
-    const PLAYLIST = [{ id: 'pAgnJDJN4VA' }, { id: 'egMWlD3fLJ8' }];
-    let cTrack = 0; let player;
+        const CARS = [
+            { id: 0, n: "Hatch Pop", p: 0, s: 7, a: 0.12, c: "#999", t: 'hatch' },
+            { id: 1, n: "Sedan Premium", p: 500, s: 10, a: 0.2, c: "#33c", t: 'sedan' },
+            { id: 2, n: "SUV Adventure", p: 1200, s: 13, a: 0.25, c: "#262", t: 'suv' },
+            { id: 3, n: "Esportivo GT", p: 2500, s: 19, a: 0.45, c: "#e1a100", t: 'sport' },
+            { id: 4, n: "F1 MONOPOSTO", p: 6000, s: 28, a: 0.8, c: "#e10600", t: 'f1' }
+        ];
 
-    const tag = document.createElement('script'); tag.src = "https://www.youtube.com/iframe_api"; document.body.appendChild(tag);
-    function onYouTubeIframeAPIReady() { 
-        player = new YT.Player('music-frame', { 
-            height: '1', width: '1', videoId: PLAYLIST[cTrack].id, 
-            playerVars: { 'autoplay': 0, 'loop': 1, 'playlist': PLAYLIST[cTrack].id },
-            events: {
-                'onReady': (e) => e.target.setVolume(50)
-            }
-        }); 
-    }
+        const QUIZ_LIST = [
+            { q: "Qual a distância segura do ciclista?", a: "1,5 metro", o: ["0,5m", "Perto", "10m"] },
+            { q: "Sinal Amarelo significa:", a: "Parar se puder", o: ["Acelerar", "Buzinar", "Passar rápido"] },
+            { q: "Álcool e Direção?", a: "Jamais!", o: ["1 Taça", "Sempre OK", "Só feriado"] }
+        ];
 
-    const CARS = [
-        { id: 0, n: "Hatch Pop", p: 0, s: 7, a: 0.12, c: "#999", t: 'hatch' },
-        { id: 1, n: "Sedan Premium", p: 500, s: 10, a: 0.2, c: "#33c", t: 'sedan' },
-        { id: 2, n: "SUV Adventure", p: 1200, s: 13, a: 0.25, c: "#262", t: 'suv' },
-        { id: 3, n: "Esportivo GT", p: 2500, s: 19, a: 0.45, c: "#e1a100", t: 'sport' },
-        { id: 4, n: "F1 MONOPOSTO", p: 6000, s: 28, a: 0.8, c: "#e10600", t: 'f1' }
-    ];
-
-    const QUIZ_LIST = [
-        { q: "Qual a distância segura do ciclista?", a: "1,5 metro", o: ["0,5m", "Perto", "10m"] },
-        { q: "Sinal Amarelo significa:", a: "Parar se puder", o: ["Acelerar", "Buzinar", "Passar rápido"] },
-        { q: "Álcool e Direção?", a: "Jamais!", o: ["1 Taça", "Sempre OK", "Só feriado"] }
-    ];
-
-    let game = {
-        m: parseInt(localStorage.getItem('otr_315_m')) || 0,
-        o: JSON.parse(localStorage.getItem('otr_315_o')) || [0],
-        sel: parseInt(localStorage.getItem('otr_315_s')) || 0,
-        hp: 100, d: 0, v: 0, act: false, started: false, px: 300, offset: 0, obs: [], qClock: 0, lt: 0, paused: false,
-        nitro: 100, isNitro: false, nCD: 0, goal: 20000
-    };
-
-    const keys = {}; window.onkeydown = e => keys[e.key] = true; window.onkeyup = e => keys[e.key] = false;
-
-    function save() { localStorage.setItem('otr_315_m', game.m); localStorage.setItem('otr_315_o', JSON.stringify(game.o)); localStorage.setItem('otr_315_s', game.sel); }
-    function syncHUD() { 
-        document.getElementById('m-val').innerText = '$' + game.m;
-        document.getElementById('hp-bar').style.width = game.hp + '%';
-        document.getElementById('nitro-bar').style.width = game.nitro + '%';
-        document.getElementById('sp-num').innerText = Math.abs(Math.floor(game.v * 12));
-        document.getElementById('dist-txt').innerText = Math.floor(game.d / 10);
-        document.getElementById('p-marker').style.bottom = Math.min(295, (game.d/game.goal)*295) + 'px';
-    }
-
-    function drawV(ctx, x, y, color, type) {
-        ctx.save(); ctx.translate(x, y); ctx.fillStyle = color;
-        if(type === 'f1') {
-            ctx.beginPath(); ctx.roundRect(-10, -50, 20, 35, 3); ctx.fill();
-            ctx.beginPath(); ctx.roundRect(-22, -15, 44, 45, 8); ctx.fill();
-            ctx.fillStyle="#111"; ctx.fillRect(-35,-45,70,12); ctx.fillRect(-35,25,70,15);
-        } else {
-            let w = type==='suv'?50:44; ctx.beginPath(); ctx.roundRect(-w/2, -45, w, 90, 10); ctx.fill();
-            ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.beginPath(); ctx.roundRect(-w/2+5, -30, w-10, 15, 2); ctx.fill();
-        }
-        ctx.fillStyle='#000'; ctx.fillRect(-28,-35,8,18); ctx.fillRect(20,-35,8,18); ctx.fillRect(-28,25,8,20); ctx.fillRect(20,25,8,20);
-        ctx.restore();
-    }
-
-    let qInterval;
-    function popQuiz() {
-        game.act = false; const q = QUIZ_LIST[Math.floor(Math.random()*QUIZ_LIST.length)];
-        const scr = document.getElementById('scr-quiz');
-        const card = scr.querySelector('div'); const timerTxt = scr.querySelector('#q-timer'); const qBox = scr.querySelector('#q-box');
-        document.getElementById('q-txt').innerText = q.q; qBox.innerHTML = ''; card.style.background = "#111";
-        
-        let tl = 10; timerTxt.innerText = tl;
-        const endQ = (isC) => { 
-            clearInterval(qInterval); 
-            if(isC) { card.style.background = "#2ecc71"; game.m += 150; save(); } 
-            else { card.style.background = "#e74c3c"; game.hp = Math.max(0, game.hp - 30); } 
-            setTimeout(() => { scr.classList.add('hide'); game.act = true; game.qClock = 0; }, 1000); 
+        let game = {
+            m: parseInt(localStorage.getItem('otr_314_m')) || 0,
+            o: JSON.parse(localStorage.getItem('otr_314_o')) || [0],
+            sel: parseInt(localStorage.getItem('otr_314_s')) || 0,
+            hp: 100, d: 0, v: 0, act: false, started: false, px: 300, offset: 0, obs: [], qClock: 0, lt: 0, paused: false,
+            nitro: 100, isNitro: false, nCD: 0, goal: 20000
         };
-        qInterval = setInterval(() => { tl--; timerTxt.innerText = tl; if(tl <= 0) endQ(false); }, 1000);
-        [q.a, ...q.o].sort(()=>Math.random()-0.5).forEach(opt => {
-            const b = document.createElement('button'); b.className = 'btn'; b.innerText = opt; b.style.width = "100%";
-            b.onclick = () => endQ(opt === q.a); qBox.appendChild(b);
-        });
-        scr.classList.remove('hide');
-    }
 
-    function init() { 
-        game.hp=100; game.d=0; game.v=0; game.px=300; game.qClock=0; game.started=false; game.obs=[]; game.nitro=100; game.nCD=0;
-        for(let i=0; i<15; i++) game.obs.push({ x: 180 + Math.random()*240, y: -(i*1600)-2000, c: '#444', t: 'sedan', sp: 1.5 });
-    }
+        const keys = {}; window.onkeydown = e => keys[e.key] = true; window.onkeyup = e => keys[e.key] = false;
 
-    function loop(now) {
-        if(game.act && !game.paused) {
-            const dt = (now - game.lt)/1000; game.lt = now;
-            const c = CARS[game.sel];
-            if(keys['w'] || keys['ArrowUp']) { game.v += c.a; game.started = true; }
-            else if(keys['s'] || keys['ArrowDown']) game.v -= c.a;
-            else game.v *= 0.98;
+        function save() { localStorage.setItem('otr_314_m', game.m); localStorage.setItem('otr_314_o', JSON.stringify(game.o)); localStorage.setItem('otr_314_s', game.sel); }
+        function syncHUD() {
+            document.getElementById('m-val').innerText = '$' + game.m;
+            document.getElementById('hp-bar').style.width = game.hp + '%';
+            document.getElementById('nitro-bar').style.width = game.nitro + '%';
+            document.getElementById('sp-num').innerText = Math.abs(Math.floor(game.v * 12));
+            document.getElementById('dist-txt').innerText = Math.floor(game.d / 10);
+            document.getElementById('p-marker').style.bottom = Math.min(295, (game.d / game.goal) * 295) + 'px';
+        }
 
-            if(keys['a'] || keys['ArrowLeft']) game.px -= 6;
-            if(keys['d'] || keys['ArrowRight']) game.px += 6;
-
-            if(keys[' '] && game.started && game.nitro >= 5 && game.nCD <= 0) { game.isNitro = true; game.nitro -= 1; game.v += 0.5; if(game.nitro <= 0) game.nCD = 10; }
-            else { game.isNitro = false; if(game.nCD > 0) { game.nCD -= dt; game.nitro = Math.min(100, game.nitro + 12 * dt); } else if(game.nitro < 100) game.nitro += 6 * dt; }
-
-            game.v = Math.max(-c.s, Math.min(game.v, game.isNitro ? c.s * 1.5 : c.s));
-            game.px = Math.max(160, Math.min(440, game.px));
-            game.d += game.v; game.offset = (game.offset + game.v)%120;
-            
-            if(game.started) {
-                game.qClock += dt; if(game.qClock >= 10) popQuiz();
-                const diffScale = 1 + (game.d / game.goal) * 2.5;
-                game.obs.forEach(o => { o.y += game.v + (o.sp * diffScale); if(Math.abs(o.x - game.px) < 45 && Math.abs(o.y - (canvas.height-180)) < 85) { game.hp -= 0.6; game.v *= 0.9; } if(o.y > canvas.height + 500) { o.y = -1000; o.x = 180 + Math.random()*240; } });
+        function drawV(ctx, x, y, color, type) {
+            ctx.save(); ctx.translate(x, y); ctx.fillStyle = color;
+            if (type === 'f1') {
+                ctx.beginPath(); ctx.roundRect(-10, -50, 20, 35, 3); ctx.fill();
+                ctx.beginPath(); ctx.roundRect(-22, -15, 44, 45, 8); ctx.fill();
+                ctx.fillStyle = "#111"; ctx.fillRect(-35, -45, 70, 12); ctx.fillRect(-35, 25, 70, 15);
+            } else {
+                let w = type === 'suv' ? 50 : 44; ctx.beginPath(); ctx.roundRect(-w / 2, -45, w, 90, 10); ctx.fill();
+                ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.beginPath(); ctx.roundRect(-w / 2 + 5, -30, w - 10, 15, 2); ctx.fill();
             }
-            if(game.hp <= 0) { game.act = false; document.getElementById('res-title').innerText = "FALHA"; document.getElementById('scr-res').classList.remove('hide'); }
-            if(game.d >= game.goal) { game.act = false; game.m += 500; save(); document.getElementById('res-title').innerText = "VITÓRIA!"; document.getElementById('scr-res').classList.remove('hide'); }
-            syncHUD();
-        } else { game.lt = now; }
+            ctx.fillStyle = '#000'; ctx.fillRect(-28, -35, 8, 18); ctx.fillRect(20, -35, 8, 18); ctx.fillRect(-28, 25, 8, 20); ctx.fillRect(20, 25, 8, 20);
+            ctx.restore();
+        }
 
-        ctx.fillStyle = '#1b4d0e'; ctx.fillRect(0,0,canvas.width,canvas.height);
-        ctx.fillStyle = '#222'; ctx.fillRect(150,0,300,canvas.height);
-        ctx.setLineDash([40,40]); ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.beginPath(); ctx.moveTo(300, -100+game.offset); ctx.lineTo(300, canvas.height+100+game.offset); ctx.stroke();
-        
-        game.obs.forEach(o => drawV(ctx, o.x, o.y, o.c, o.t));
-        drawV(ctx, game.px, canvas.height - 180, CARS[game.sel].c, CARS[game.sel].t);
-        requestAnimationFrame(loop);
-    }
+        let qInterval;
+        function popQuiz() {
+            game.act = false; const q = QUIZ_LIST[Math.floor(Math.random() * QUIZ_LIST.length)];
+            const scr = document.getElementById('scr-quiz');
+            const card = scr.querySelector('div'); const timerTxt = scr.querySelector('#q-timer'); const qBox = scr.querySelector('#q-box');
+            document.getElementById('q-txt').innerText = q.q; qBox.innerHTML = ''; card.style.background = "#111";
 
-    // UI LOGIC
-    document.getElementById('vol-slider').oninput = (e) => { if(player) player.setVolume(e.target.value); };
+            let tl = 10; timerTxt.innerText = tl;
+            const endQ = (isC) => {
+                clearInterval(qInterval);
+                if (isC) { card.style.background = "#2ecc71"; game.m += 150; save(); }
+                else { card.style.background = "#e74c3c"; game.hp = Math.max(0, game.hp - 30); }
+                setTimeout(() => { scr.classList.add('hide'); game.act = true; game.qClock = 0; }, 1000);
+            };
+            qInterval = setInterval(() => { tl--; timerTxt.innerText = tl; if (tl <= 0) endQ(false); }, 1000);
+            [q.a, ...q.o].sort(() => Math.random() - 0.5).forEach(opt => {
+                const b = document.createElement('button'); b.className = 'btn'; b.innerText = opt; b.style.width = "100%";
+                b.onclick = () => endQ(opt === q.a); qBox.appendChild(b);
+            });
+            scr.classList.remove('hide');
+        }
 
-    document.getElementById('start-btn').onclick = () => { if(player) player.playVideo(); document.getElementById('scr-menu').classList.add('hide'); init(); game.act = true; game.lt = performance.now(); };
-    document.getElementById('tut-btn').onclick = () => document.getElementById('scr-tut').classList.remove('hide');
-    document.getElementById('exit-tut').onclick = () => document.getElementById('scr-tut').classList.add('hide');
-    document.getElementById('garage-btn').onclick = () => {
-        const list = document.getElementById('car-list'); list.innerHTML = '';
-        CARS.forEach((v, index) => {
-            const has = game.o.includes(v.id); const sel = game.sel === v.id; const unlock = index === 0 || game.o.includes(CARS[index - 1].id);
-            const card = document.createElement('div'); card.style = "background:#000; padding:12px; margin-bottom:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; border:1px solid "+(sel?'var(--safety-cyan)':'#333');
-            card.innerHTML = `<div><b>${v.n}</b><br><small>${has?'ADQUIRIDO':'$'+v.p}</small></div><button class="btn" style="margin:0; padding:6px 12px; font-size:0.8rem; ${(!has && !unlock)?'opacity:0.5;':''}">${has?(sel?'EQUIPADO':'ESCOLHER'):(unlock?'COMPRAR':'BLOQUEADO')}</button>`;
-            if(has || unlock) card.querySelector('button').onclick = () => { if(!has && game.m >= v.p) { game.m -= v.p; game.o.push(v.id); save(); document.getElementById('garage-btn').click(); } else if(has) { game.sel = v.id; save(); document.getElementById('garage-btn').click(); } };
-            list.appendChild(card);
-        });
-        document.getElementById('scr-garage').classList.remove('hide');
-    };
-    document.getElementById('exit-garage').onclick = () => document.getElementById('scr-garage').classList.add('hide');
-    document.getElementById('pause-icon').onclick = () => { game.paused = true; document.getElementById('scr-pause').classList.remove('hide'); };
-    document.getElementById('resume-btn').onclick = () => { game.paused = false; document.getElementById('scr-pause').classList.add('hide'); };
-    document.getElementById('restart-btn').onclick = () => { game.paused = false; document.getElementById('scr-pause').classList.add('hide'); init(); };
-    document.getElementById('back-menu').onclick = () => { game.paused = false; document.getElementById('scr-pause').classList.add('hide'); document.getElementById('scr-menu').classList.remove('hide'); };
-    document.getElementById('res-menu').onclick = () => { document.getElementById('scr-res').classList.add('hide'); document.getElementById('scr-menu').classList.remove('hide'); };
-    document.getElementById('retry-btn').onclick = () => { document.getElementById('scr-res').classList.add('hide'); init(); game.act = true; game.lt = performance.now(); };
-    document.getElementById('switch-music').onclick = () => { cTrack = (cTrack + 1) % PLAYLIST.length; player.loadVideoById(PLAYLIST[cTrack].id); player.setVolume(document.getElementById('vol-slider').value); };
+        function init() {
+            game.hp = 100; game.d = 0; game.v = 0; game.px = 300; game.qClock = 0; game.started = false; game.obs = []; game.nitro = 100; game.nCD = 0;
+            for (let i = 0; i < 15; i++) game.obs.push({ x: 180 + Math.random() * 240, y: -(i * 1600) - 2000, c: '#444', t: 'sedan', sp: 1.5 });
+        }
 
-    function boot() { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; syncHUD(); loop(performance.now()); }
-    window.onresize = boot; boot();
+        function loop(now) {
+            if (game.act && !game.paused) {
+                const dt = (now - game.lt) / 1000; game.lt = now;
+                const c = CARS[game.sel];
+                if (keys['w'] || keys['ArrowUp']) { game.v += c.a; game.started = true; }
+                else if (keys['s'] || keys['ArrowDown']) game.v -= c.a;
+                else game.v *= 0.98;
 
-</script>
+                if (keys['a'] || keys['ArrowLeft']) game.px -= 6;
+                if (keys['d'] || keys['ArrowRight']) game.px += 6;
+
+                if (keys[' '] && game.started && game.nitro >= 5 && game.nCD <= 0) { game.isNitro = true; game.nitro -= 1; game.v += 0.5; if (game.nitro <= 0) game.nCD = 10; }
+                else { game.isNitro = false; if (game.nCD > 0) { game.nCD -= dt; game.nitro = Math.min(100, game.nitro + 12 * dt); } else if (game.nitro < 100) game.nitro += 6 * dt; }
+
+                game.v = Math.max(-c.s, Math.min(game.v, game.isNitro ? c.s * 1.5 : c.s));
+                game.px = Math.max(160, Math.min(440, game.px));
+                game.d += game.v; game.offset = (game.offset + game.v) % 120;
+
+                if (game.started) {
+                    game.qClock += dt; if (game.qClock >= 10) popQuiz();
+                    const diffScale = 1 + (game.d / game.goal) * 2.5;
+                    game.obs.forEach(o => { o.y += game.v + (o.sp * diffScale); if (Math.abs(o.x - game.px) < 45 && Math.abs(o.y - (canvas.height - 180)) < 85) { game.hp -= 0.6; game.v *= 0.9; } if (o.y > canvas.height + 500) { o.y = -1000; o.x = 180 + Math.random() * 240; } });
+                }
+                if (game.hp <= 0) { game.act = false; document.getElementById('res-title').innerText = "FALHA"; document.getElementById('scr-res').classList.remove('hide'); }
+                if (game.d >= game.goal) { game.act = false; game.m += 500; save(); document.getElementById('res-title').innerText = "VITÓRIA!"; document.getElementById('scr-res').classList.remove('hide'); }
+                syncHUD();
+            } else { game.lt = now; }
+
+            ctx.fillStyle = '#1b4d0e'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#222'; ctx.fillRect(150, 0, 300, canvas.height);
+            ctx.setLineDash([40, 40]); ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.beginPath(); ctx.moveTo(300, -100 + game.offset); ctx.lineTo(300, canvas.height + 100 + game.offset); ctx.stroke();
+
+            game.obs.forEach(o => drawV(ctx, o.x, o.y, o.c, o.t));
+            drawV(ctx, game.px, canvas.height - 180, CARS[game.sel].c, CARS[game.sel].t);
+            requestAnimationFrame(loop);
+        }
+
+        // UI BUTTONS
+        document.getElementById('start-btn').onclick = () => { if (player) player.playVideo(); document.getElementById('scr-menu').classList.add('hide'); init(); game.act = true; game.lt = performance.now(); };
+        document.getElementById('tut-btn').onclick = () => document.getElementById('scr-tut').classList.remove('hide');
+        document.getElementById('exit-tut').onclick = () => document.getElementById('scr-tut').classList.add('hide');
+        document.getElementById('garage-btn').onclick = () => {
+            const list = document.getElementById('car-list'); list.innerHTML = '';
+            CARS.forEach((v, index) => {
+                const has = game.o.includes(v.id); const sel = game.sel === v.id; const unlock = index === 0 || game.o.includes(CARS[index - 1].id);
+                const card = document.createElement('div'); card.style = "background:#000; padding:12px; margin-bottom:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; border:1px solid " + (sel ? 'var(--safety-cyan)' : '#333');
+                card.innerHTML = `<div><b>${v.n}</b><br><small>${has ? 'ADQUIRIDO' : '$' + v.p}</small></div><button class="btn" style="margin:0; padding:6px 12px; font-size:0.8rem; ${(!has && !unlock) ? 'opacity:0.5;' : ''}">${has ? (sel ? 'EQUIPADO' : 'ESCOLHER') : (unlock ? 'COMPRAR' : 'BLOQUEADO')}</button>`;
+                if (has || unlock) card.querySelector('button').onclick = () => { if (!has && game.m >= v.p) { game.m -= v.p; game.o.push(v.id); save(); document.getElementById('garage-btn').click(); } else if (has) { game.sel = v.id; save(); document.getElementById('garage-btn').click(); } };
+                list.appendChild(card);
+            });
+            document.getElementById('scr-garage').classList.remove('hide');
+        };
+        document.getElementById('exit-garage').onclick = () => document.getElementById('scr-garage').classList.add('hide');
+        const volCtrl = document.getElementById('vol-ctrl');
+        const volSlider = document.getElementById('vol-slider');
+        const muteIcon = document.getElementById('mute-icon');
+
+        muteIcon.onclick = (e) => {
+            e.stopPropagation();
+            volCtrl.classList.toggle('active');
+        };
+
+        volSlider.oninput = (e) => {
+            const v = e.target.value;
+            if (player && player.setVolume) {
+                player.setVolume(v);
+                player.unMute();
+                isMuted = v == 0;
+                muteIcon.innerText = isMuted ? "🔇" : "🔊";
+            }
+        };
+
+        // Close slider when clicking outside
+        window.onclick = (e) => {
+            if (!volCtrl.contains(e.target) && volCtrl.classList.contains('active')) {
+                volCtrl.classList.remove('active');
+            }
+        };
+        document.getElementById('pause-icon').onclick = () => { game.paused = true; document.getElementById('scr-pause').classList.remove('hide'); };
+        document.getElementById('resume-btn').onclick = () => { game.paused = false; document.getElementById('scr-pause').classList.add('hide'); };
+        document.getElementById('restart-btn').onclick = () => { game.paused = false; document.getElementById('scr-pause').classList.add('hide'); init(); };
+        document.getElementById('back-menu').onclick = () => { game.paused = false; document.getElementById('scr-pause').classList.add('hide'); document.getElementById('scr-menu').classList.remove('hide'); };
+        document.getElementById('res-menu').onclick = () => { document.getElementById('scr-res').classList.add('hide'); document.getElementById('scr-menu').classList.remove('hide'); };
+        document.getElementById('retry-btn').onclick = () => { document.getElementById('scr-res').classList.add('hide'); init(); game.act = true; game.lt = performance.now(); };
+        document.getElementById('switch-music').onclick = () => { cTrack = (cTrack + 1) % PLAYLIST.length; player.loadVideoById(PLAYLIST[cTrack].id); };
+
+        function boot() { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; syncHUD(); loop(performance.now()); }
+        window.onresize = boot; boot();
+
+    </script>
 </body>
+
 </html>
