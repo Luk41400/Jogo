@@ -338,7 +338,7 @@
                     <div id="nitro-bar"></div>
                 </div>
             </div>
-            <div class="stat-badge">META: <span id="dist-txt">0</span>m / 2000m</div>
+            <div class="stat-badge">META: <span id="dist-txt">0</span>m / <span id="goal-txt">2000</span>m</div>
         </div>
 
         <div class="ctrl-hud">
@@ -362,6 +362,9 @@
         <div id="scr-menu" class="screen">
             <h1 style="font-size:3.5rem; color:var(--f1-red); margin-bottom:10px; text-shadow:0 0 15px var(--f1-red);">
                 OWN THE ROAD</h1>
+            <div class="stat-badge" style="margin-bottom:20px; pointer-events:auto; border-left-color:var(--caution-yellow)">
+                SALDO ATUAL: <span id="m-menu" style="color:var(--caution-yellow)">$0</span>
+            </div>
             <button class="btn" id="start-btn">INICIAR CORRIDA</button>
             <button class="btn" style="background:#444" id="tut-btn">COMO JOGAR</button>
             <button class="btn" style="background:#444" id="garage-btn">GARAGEM</button>
@@ -391,10 +394,18 @@
         <!-- QUIZ -->
         <div id="scr-quiz" class="screen hide">
             <div
-                style="background:#111; border:2px solid var(--safety-cyan); padding:30px; border-radius:15px; width:90%; text-align:center;">
+                style="background:#111; border:2px solid var(--safety-cyan); padding:30px; border-radius:15px; width:90%; text-align:center; display:flex; flex-direction:column; align-items:center;">
+                
+                <!-- TRAFFIC LIGHT (FAROL) -->
+                <div id="q-traffic" style="display:flex; flex-direction:column; gap:8px; width:45px; background:#222; padding:10px; border-radius:20px; border:3px solid #444; margin-bottom:20px;">
+                    <div id="t-red" style="width:25px; height:25px; border-radius:50%; background:#200; box-shadow: inset 0 0 5px #000;"></div>
+                    <div id="t-yellow" style="width:25px; height:25px; border-radius:50%; background:#220; box-shadow: inset 0 0 5px #000;"></div>
+                    <div id="t-green" style="width:25px; height:25px; border-radius:50%; background:#020; box-shadow: inset 0 0 5px #000;"></div>
+                </div>
+
                 <div id="q-timer" style="font-size:1.5rem; color:var(--caution-yellow); margin-bottom:15px;">10</div>
                 <h2 id="q-txt" style="margin-bottom:25px;">?</h2>
-                <div id="q-box" style="display:flex; flex-direction:column; gap:10px;"></div>
+                <div id="q-box" style="display:flex; flex-direction:column; gap:10px; width:100%;"></div>
             </div>
         </div>
 
@@ -427,11 +438,11 @@
         let cTrack = 0;
 
         const CARS = [
-            { id: 0, n: "Hatch Pop", p: 0, s: 7, a: 0.12, c: "#999", t: 'hatch' },
-            { id: 1, n: "Sedan Premium", p: 500, s: 10, a: 0.2, c: "#33c", t: 'sedan' },
-            { id: 2, n: "SUV Adventure", p: 1200, s: 13, a: 0.25, c: "#262", t: 'suv' },
-            { id: 3, n: "Esportivo GT", p: 2500, a: 0.45, c: "#e1a100", t: 'sport' },
-            { id: 4, n: "F1 MONOPOSTO", p: 6000, s: 28, a: 0.8, c: "#e10600", t: 'f1' }
+            { id: 0, n: "Hatch Pop", p: 0, s: 7, a: 0.12, c: "#999", t: 'hatch', g: 20000 },
+            { id: 1, n: "Sedan Premium", p: 500, s: 10, a: 0.2, c: "#33c", t: 'sedan', g: 35000 },
+            { id: 2, n: "SUV Adventure", p: 1200, s: 13, a: 0.25, c: "#262", t: 'suv', g: 50000 },
+            { id: 3, n: "Esportivo GT", p: 2500, s: 18, a: 0.45, c: "#e1a100", t: 'sport', g: 80000 },
+            { id: 4, n: "F1 MONOPOSTO", p: 6000, s: 28, a: 0.8, c: "#e10600", t: 'f1', g: 150000 }
         ];
 
         const QUIZ_LIST = [
@@ -468,11 +479,14 @@
             setTimeout(() => msg.remove(), 2000);
         }
         function syncHUD() {
-            document.getElementById('m-val').innerText = '$' + (game.m || 0);
+            const m = game.m || 0;
+            document.getElementById('m-val').innerText = '$' + m;
+            document.getElementById('m-menu').innerText = '$' + m;
             document.getElementById('hp-bar').style.width = (game.hp || 0) + '%';
             document.getElementById('nitro-bar').style.width = (game.nitro || 0) + '%';
             document.getElementById('sp-num').innerText = Math.abs(Math.floor((game.v || 0) * 12));
             document.getElementById('dist-txt').innerText = Math.floor((game.d || 0) / 10);
+            document.getElementById('goal-txt').innerText = Math.floor(game.goal / 10);
             document.getElementById('p-marker').style.bottom = Math.min(295, ((game.d || 0) / game.goal) * 295) + 'px';
         }
 
@@ -522,11 +536,23 @@
                 
                 clearInterval(qInterval);
 
+                // Reset do farol
+                document.getElementById('t-red').style.background = '#200';
+                document.getElementById('t-yellow').style.background = '#220';
+                document.getElementById('t-green').style.background = '#020';
+                document.getElementById('t-red').style.boxShadow = 'none';
+                document.getElementById('t-yellow').style.boxShadow = 'none';
+                document.getElementById('t-green').style.boxShadow = 'none';
+
                 if (isC) { 
                     card.style.background = "#2ecc71"; 
+                    document.getElementById('t-green').style.background = '#0f0';
+                    document.getElementById('t-green').style.boxShadow = '0 0 15px #0f0';
                     game.m += 150; 
                 } else { 
                     card.style.background = "#e74c3c"; 
+                    document.getElementById('t-red').style.background = '#f00';
+                    document.getElementById('t-red').style.boxShadow = '0 0 15px #f00';
                     game.hp = Math.max(0, game.hp - 30); 
                 }
                 syncHUD();
@@ -539,6 +565,12 @@
                     game.lt = performance.now();
                 }, 1000);
             };
+
+            // Farol Inicial (Amarelo enquanto responde)
+            document.getElementById('t-red').style.background = '#200';
+            document.getElementById('t-yellow').style.background = '#ff0';
+            document.getElementById('t-yellow').style.boxShadow = '0 0 15px #ff0';
+            document.getElementById('t-green').style.background = '#020';
 
             qInterval = setInterval(() => { 
                 tl--; 
@@ -563,11 +595,13 @@
         }
 
         function init() {
+            const c = CARS[game.sel];
             game.hp = 100; game.d = 0; game.v = 0; game.px = 300; game.qClock = 0; game.started = false; game.obs = []; game.nitro = 100; game.nCD = 0;
+            game.goal = c.g || 20000;
             nextObsY = -800;
             for (let i = 0; i < 12; i++) {
                 game.obs.push({ x: 180 + Math.random() * 240, y: nextObsY, c: '#444', t: 'sedan', sp: 1.5 });
-                nextObsY -= 800; // Espaçamento massivo inicial
+                nextObsY -= 800; 
             }
         }
 
