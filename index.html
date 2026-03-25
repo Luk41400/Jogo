@@ -324,7 +324,11 @@
         const QUIZ_LIST = [
             { q: "Qual a distância segura do ciclista?", a: "1,5 metro", o: ["0,5m", "Perto", "10m"] },
             { q: "Sinal Amarelo significa:", a: "Parar se puder", o: ["Acelerar", "Buzinar", "Passar rápido"] },
-            { q: "Álcool e Direção?", a: "Jamais!", o: ["1 Taça", "Sempre OK", "Só feriado"] }
+            { q: "Álcool e Direção?", a: "Jamais!", o: ["1 Taça", "Sempre OK", "Só feriado"] },
+            { q: "Qual o uso correto do pisca-alerta?", a: "Emergência ou parada", o: ["Indicar conversão", "Andar rápido", "Embaixo de chuva"] },
+            { q: "Farol baixo durante o dia em rodovias?", a: "Obrigatório", o: ["Opcional", "Proibido", "Só se houver neblina"] },
+            { q: "Prioridade no cruzamento sem sinalização?", a: "Quem vem da direita", o: ["O veículo maior", "Quem buzinar primeiro", "O mais veloz"] },
+            { q: "Documento obrigatório do condutor?", a: "CNH e CRLV", o: ["RG apenas", "CPF", "Comprovante de residência"] }
         ];
 
         let game = {
@@ -332,7 +336,8 @@
             o: JSON.parse(localStorage.getItem('otr_314_o')) || [0],
             sel: parseInt(localStorage.getItem('otr_314_s')) || 0,
             hp: 100, d: 0, v: 0, act: false, started: false, px: 300, offset: 0, obs: [], qClock: 0, lt: 0, paused: false,
-            nitro: 100, isNitro: false, nCD: 0, goal: 20000
+            nitro: 100, isNitro: false, nCD: 0, goal: 20000,
+            qPool: []
         };
 
         const keys = {}; window.onkeydown = e => keys[e.key] = true; window.onkeyup = e => keys[e.key] = false;
@@ -375,7 +380,14 @@
 
         let qInterval;
         function popQuiz() {
-            game.act = false; const q = QUIZ_LIST[Math.floor(Math.random() * QUIZ_LIST.length)];
+            game.act = false;
+
+            // Sistema para não repetir perguntas
+            if (game.qPool.length === 0) {
+                game.qPool = QUIZ_LIST.map((_, i) => i).sort(() => Math.random() - 0.5);
+            }
+            const qIdx = game.qPool.pop();
+            const q = QUIZ_LIST[qIdx];
             const scr = document.getElementById('scr-quiz');
             const card = scr.querySelector('div'); const timerTxt = scr.querySelector('#q-timer'); const qBox = scr.querySelector('#q-box');
             document.getElementById('q-txt').innerText = q.q; qBox.innerHTML = ''; card.style.background = "#111";
@@ -402,6 +414,7 @@
 
         function init() {
             game.hp = 100; game.d = 0; game.v = 0; game.px = 300; game.qClock = 0; game.started = false; game.obs = []; game.nitro = 100; game.nCD = 0;
+            game.qPool = []; // Reinicia o pool de perguntas a cada nova corrida
             for (let i = 0; i < 15; i++) game.obs.push({ x: 180 + Math.random() * 240, y: -(i * 1600) - 2000, c: '#444', t: 'sedan', sp: 1.5 });
         }
 
