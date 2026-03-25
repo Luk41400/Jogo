@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Own the Road v3.13 | CLASSIC HUD & MENU</title>
+    <title>Own the Road v3.14 | BALANCED UPDATE</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@900&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -24,7 +24,7 @@
 
         canvas { display:block; width:100%; height:100%; }
 
-        /* HUD OVERLAY (CLASSIC) */
+        /* HUD */
         .hud { position:absolute; top:20px; left:20px; right:20px; z-index:10; pointer-events:none; display:flex; flex-direction:column; gap:8px; }
         .stat-badge { background:rgba(0,0,0,0.8); padding:10px 15px; border-radius:8px; border-left:4px solid var(--safety-cyan); width:fit-content; }
         .bar-cont { width:100px; height:8px; background:#333; border-radius:4px; overflow:hidden; margin-top:5px; }
@@ -41,7 +41,6 @@
         }
         #sp-num { font-size:1.6rem; font-weight:900; color:var(--safety-cyan); font-family: 'Outfit'; }
 
-        /* MINI MAP (CLASSIC) */
         #track-map { position:absolute; top:180px; right:20px; width:10px; height:300px; background:rgba(255,255,255,0.1); border-radius:5px; }
         #p-marker { position:absolute; left:-10px; width:30px; height:6px; background:var(--f1-red); border-radius:3px; box-shadow: 0 0 10px var(--f1-red); }
 
@@ -53,7 +52,10 @@
         .btn { background:var(--f1-red); color:white; border:none; padding:12px 25px; font-weight:900; font-size:1rem; cursor:pointer; border-radius:5px; margin:8px; }
         .btn:hover { background: #ff0000; }
 
-        /* MUSIC FRAME */
+        /* TUTORIAL (CLASSIC DESIGN) */
+        .tut-box { text-align: left; background: #000; padding: 20px; border-radius: 10px; border: 1px solid #444; margin: 20px 0; max-width: 90%; font-size: 0.85rem; line-height: 1.6; }
+        .tut-box b { color: var(--safety-cyan); }
+
         #music-frame { position: absolute; top: -100px; left: -100px; width: 1px; height: 1px; visibility: hidden; pointer-events: none; }
 
     </style>
@@ -72,7 +74,6 @@
         <div class="stat-badge">META: <span id="dist-txt">0</span>m / 2000m</div>
     </div>
 
-    <!-- CONTROLS -->
     <div class="ctrl-hud">
         <button id="switch-music" class="btn-icon">🎵</button>
         <button id="mute-icon" class="btn-icon">🔊</button>
@@ -90,15 +91,16 @@
         <button class="btn" style="background:#444" id="garage-btn">GARAGEM</button>
     </div>
 
-    <!-- TUTORIAL -->
+    <!-- TUTORIAL (REVERTED DESIGN) -->
     <div id="scr-tut" class="screen hide">
         <h1 style="color:var(--safety-cyan)">TUTORIAL</h1>
-        <div style="background:#111; padding:20px; border-radius:12px; margin:20px 0; font-size:0.9rem; border:1px solid #333;">
-            • <b>W / ⬆️</b>: Acelerar<br>
+        <div class="tut-box">
+            • <b>W / ⬆️</b>: Acelerar (Ativa cronômetros)<br>
             • <b>S / ⬇️</b>: Freio / Marcha Ré<br>
-            • <b>A - D</b>: Direção Lateral<br>
-            • <b>ESPAÇO</b>: Ativar <b>NITRO</b><br>
-            • <b>QUIZ</b>: Acerte em 10s para ganhar $ e vida!
+            • <b>A - D / ⬅️ - ➡️</b>: Direção Lateral<br>
+            • <b>ESPAÇO</b>: Ativar <b>NITRO</b> (Boost!)<br>
+            • <b>QUIZ</b>: Acerte em 10s para ganhar $ e Vida!<br>
+            • <b>GARAGEM</b>: Compre carros em ordem para evoluir.
         </div>
         <button class="btn" id="exit-tut">VOLTAR</button>
     </div>
@@ -110,7 +112,7 @@
         <button class="btn" id="exit-garage">VOLTAR</button>
     </div>
 
-    <!-- QUIZ (CLASSIC DESIGN) -->
+    <!-- QUIZ -->
     <div id="scr-quiz" class="screen hide">
         <div style="background:#111; border:2px solid var(--safety-cyan); padding:30px; border-radius:15px; width:90%; text-align:center;">
             <div id="q-timer" style="font-size:1.5rem; color:var(--caution-yellow); margin-bottom:15px;">10</div>
@@ -157,20 +159,20 @@
     const QUIZ_LIST = [
         { q: "Qual a distância segura do ciclista?", a: "1,5 metro", o: ["0,5m", "Perto", "10m"] },
         { q: "Sinal Amarelo significa:", a: "Parar se puder", o: ["Acelerar", "Buzinar", "Passar rápido"] },
-        { q: "Álcool e Direção?", a: "Jamais!", o: ["1 Taça", "Sempre OK", "Só em feriados"] }
+        { q: "Álcool e Direção?", a: "Jamais!", o: ["1 Taça", "Sempre OK", "Só feriado"] }
     ];
 
     let game = {
-        m: parseInt(localStorage.getItem('otr_313_m')) || 0,
-        o: JSON.parse(localStorage.getItem('otr_313_o')) || [0],
-        sel: parseInt(localStorage.getItem('otr_313_s')) || 0,
+        m: parseInt(localStorage.getItem('otr_314_m')) || 0,
+        o: JSON.parse(localStorage.getItem('otr_314_o')) || [0],
+        sel: parseInt(localStorage.getItem('otr_314_s')) || 0,
         hp: 100, d: 0, v: 0, act: false, started: false, px: 300, offset: 0, obs: [], qClock: 0, lt: 0, paused: false,
         nitro: 100, isNitro: false, nCD: 0, goal: 20000
     };
 
     const keys = {}; window.onkeydown = e => keys[e.key] = true; window.onkeyup = e => keys[e.key] = false;
 
-    function save() { localStorage.setItem('otr_313_m', game.m); localStorage.setItem('otr_313_o', JSON.stringify(game.o)); localStorage.setItem('otr_313_s', game.sel); }
+    function save() { localStorage.setItem('otr_314_m', game.m); localStorage.setItem('otr_314_o', JSON.stringify(game.o)); localStorage.setItem('otr_314_s', game.sel); }
     function syncHUD() { 
         document.getElementById('m-val').innerText = '$' + game.m;
         document.getElementById('hp-bar').style.width = game.hp + '%';
@@ -218,7 +220,7 @@
 
     function init() { 
         game.hp=100; game.d=0; game.v=0; game.px=300; game.qClock=0; game.started=false; game.obs=[]; game.nitro=100; game.nCD=0;
-        for(let i=0; i<30; i++) game.obs.push({ x: 180 + Math.random()*240, y: -(i*1200)-2000, c: '#444', t: 'sedan', sp: 1.5 });
+        for(let i=0; i<15; i++) game.obs.push({ x: 180 + Math.random()*240, y: -(i*1600)-2000, c: '#444', t: 'sedan', sp: 1.5 });
     }
 
     function loop(now) {
@@ -232,8 +234,8 @@
             if(keys['a'] || keys['ArrowLeft']) game.px -= 6;
             if(keys['d'] || keys['ArrowRight']) game.px += 6;
 
-            if(keys[' '] && game.started && game.nitro >= 10 && game.nCD <= 0) { game.isNitro = true; game.nitro -= 1; game.v += 0.5; if(game.nitro <= 0) game.nCD = 10; }
-            else { game.isNitro = false; if(game.nCD > 0) { game.nCD -= dt; game.nitro = Math.min(100, game.nitro + 10 * dt); } else if(game.nitro < 100) game.nitro += 5 * dt; }
+            if(keys[' '] && game.started && game.nitro >= 5 && game.nCD <= 0) { game.isNitro = true; game.nitro -= 1; game.v += 0.5; if(game.nitro <= 0) game.nCD = 10; }
+            else { game.isNitro = false; if(game.nCD > 0) { game.nCD -= dt; game.nitro = Math.min(100, game.nitro + 12 * dt); } else if(game.nitro < 100) game.nitro += 6 * dt; }
 
             game.v = Math.max(-c.s, Math.min(game.v, game.isNitro ? c.s * 1.5 : c.s));
             game.px = Math.max(160, Math.min(440, game.px));
@@ -249,7 +251,7 @@
             syncHUD();
         } else { game.lt = now; }
 
-        ctx.fillStyle = '#2d5a27'; ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = '#1b4d0e'; ctx.fillRect(0,0,canvas.width,canvas.height);
         ctx.fillStyle = '#222'; ctx.fillRect(150,0,300,canvas.height);
         ctx.setLineDash([40,40]); ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.beginPath(); ctx.moveTo(300, -100+game.offset); ctx.lineTo(300, canvas.height+100+game.offset); ctx.stroke();
         
