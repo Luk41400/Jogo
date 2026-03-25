@@ -99,7 +99,7 @@
             position: absolute;
             top: 20px;
             right: 20px;
-            z-index: 50;
+            z-index: 1000; /* Ensure it's above everything including screens */
             display: flex;
             gap: 10px;
         }
@@ -138,6 +138,7 @@
             width: 160px; /* Expand to show slider */
             padding-right: 15px;
             border-color: var(--safety-cyan);
+            cursor: default; /* Don't show pointer for the whole container when open */
         }
 
         .vol-icon {
@@ -291,6 +292,12 @@
             visibility: hidden;
             pointer-events: none;
         }
+        @keyframes fadeOut {
+            0% { opacity: 0; transform: translate(-50%, 20px); }
+            10% { opacity: 1; transform: translate(-50%, 0); }
+            80% { opacity: 1; transform: translate(-50%, 0); }
+            100% { opacity: 0; transform: translate(-50%, -20px); }
+        }
     </style>
 </head>
 
@@ -396,7 +403,13 @@
         let cTrack = 0; let player; let isMuted = false;
 
         const tag = document.createElement('script'); tag.src = "https://www.youtube.com/iframe_api"; document.body.appendChild(tag);
-        function onYouTubeIframeAPIReady() { player = new YT.Player('music-frame', { height: '1', width: '1', videoId: PLAYLIST[cTrack].id, playerVars: { 'autoplay': 0, 'loop': 1, 'playlist': PLAYLIST[cTrack].id } }); }
+        function onYouTubeIframeAPIReady() { 
+            player = new YT.Player('music-frame', { 
+                height: '1', width: '1', videoId: PLAYLIST[cTrack].id, 
+                playerVars: { 'autoplay': 0, 'loop': 1, 'playlist': PLAYLIST[cTrack].id },
+                events: { 'onReady': updateAudio }
+            }); 
+        }
 
         const CARS = [
             { id: 0, n: "Hatch Pop", p: 0, s: 7, a: 0.12, c: "#999", t: 'hatch' },
@@ -416,13 +429,29 @@
             m: parseInt(localStorage.getItem('otr_314_m')) || 0,
             o: JSON.parse(localStorage.getItem('otr_314_o')) || [0],
             sel: parseInt(localStorage.getItem('otr_314_s')) || 0,
+            vol: parseInt(localStorage.getItem('otr_314_vol')) ?? 100,
+            muted: localStorage.getItem('otr_314_muted') === 'true',
             hp: 100, d: 0, v: 0, act: false, started: false, px: 300, offset: 0, obs: [], qClock: 0, lt: 0, paused: false,
             nitro: 100, isNitro: false, nCD: 0, goal: 20000
         };
 
         const keys = {}; window.onkeydown = e => keys[e.key] = true; window.onkeyup = e => keys[e.key] = false;
 
-        function save() { localStorage.setItem('otr_314_m', game.m); localStorage.setItem('otr_314_o', JSON.stringify(game.o)); localStorage.setItem('otr_314_s', game.sel); }
+        function save() { 
+            localStorage.setItem('otr_314_m', game.m); 
+            localStorage.setItem('otr_314_o', JSON.stringify(game.o)); 
+            localStorage.setItem('otr_314_s', game.sel);
+            localStorage.setItem('otr_314_vol', game.vol);
+            localStorage.setItem('otr_314_muted', game.muted);
+            showSaveMsg();
+        }
+        function showSaveMsg() {
+            const msg = document.createElement('div');
+            msg.innerText = "💾 PROGRESSO SALVO";
+            msg.style = "position:absolute; bottom:20px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.8); color:var(--safety-cyan); padding:10px 20px; border-radius:30px; border:1px solid var(--safety-cyan); font-size:0.8rem; z-index:2000; animation: fadeOut 2s forwards;";
+            document.body.appendChild(msg);
+            setTimeout(() => msg.remove(), 2000);
+        }
         function syncHUD() {
             document.getElementById('m-val').innerText = '$' + game.m;
             document.getElementById('hp-bar').style.width = game.hp + '%';
@@ -526,31 +555,63 @@
             document.getElementById('scr-garage').classList.remove('hide');
         };
         document.getElementById('exit-garage').onclick = () => document.getElementById('scr-garage').classList.add('hide');
+
         const volCtrl = document.getElementById('vol-ctrl');
         const volSlider = document.getElementById('vol-slider');
         const muteIcon = document.getElementById('mute-icon');
 
+        function updateAudio() {
+            if (!player || typeof player.setVolume !== 'function') return;
+            player.setVolume(game.vol);
+            if (game.muted || game.vol === 0) {
+                player.mute();
+                muteIcon.innerText = "🔇";
+            } else {
+                player.unMute();
+                muteIcon.innerText = "🔊";
+            }
+            volSlider.value = game.vol;
+        }
+
         muteIcon.onclick = (e) => {
             e.stopPropagation();
-            volCtrl.classList.toggle('active');
+            if (volCtrl.classList.contains('active')) {
+                game.muted = !game.muted;
+                updateAudio();
+                save();
+            } else {
+                volCtrl.classList.add('active');
+            }
+        };
+
+        // Also allow clicking the wrapper when it's closed to open it
+        volCtrl.onclick = (e) => {
+            if (!volCtrl.classList.contains('active')) {
+                volCtrl.classList.add('active');
+                e.stopPropagation();
+            }
         };
 
         volSlider.oninput = (e) => {
-            const v = e.target.value;
-            if (player && player.setVolume) {
-                player.setVolume(v);
-                player.unMute();
-                isMuted = v == 0;
-                muteIcon.innerText = isMuted ? "🔇" : "🔊";
-            }
+            game.vol = parseInt(e.target.value);
+            game.muted = game.vol === 0;
+            updateAudio();
         };
 
-        // Close slider when clicking outside
-        window.onclick = (e) => {
+        volSlider.onchange = () => save();
+
+        // Close slider when clicking outside or pressing ESC
+        window.addEventListener('click', (e) => {
             if (!volCtrl.contains(e.target) && volCtrl.classList.contains('active')) {
                 volCtrl.classList.remove('active');
             }
-        };
+        });
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && volCtrl.classList.contains('active')) {
+                volCtrl.classList.remove('active');
+            }
+        });
         document.getElementById('pause-icon').onclick = () => { game.paused = true; document.getElementById('scr-pause').classList.remove('hide'); };
         document.getElementById('resume-btn').onclick = () => { game.paused = false; document.getElementById('scr-pause').classList.add('hide'); };
         document.getElementById('restart-btn').onclick = () => { game.paused = false; document.getElementById('scr-pause').classList.add('hide'); init(); };
@@ -559,7 +620,13 @@
         document.getElementById('retry-btn').onclick = () => { document.getElementById('scr-res').classList.add('hide'); init(); game.act = true; game.lt = performance.now(); };
         document.getElementById('switch-music').onclick = () => { cTrack = (cTrack + 1) % PLAYLIST.length; player.loadVideoById(PLAYLIST[cTrack].id); };
 
-        function boot() { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; syncHUD(); loop(performance.now()); }
+        function boot() { 
+            canvas.width = canvas.offsetWidth; 
+            canvas.height = canvas.offsetHeight; 
+            syncHUD(); 
+            updateAudio();
+            loop(performance.now()); 
+        }
         window.onresize = boot; boot();
 
     </script>
