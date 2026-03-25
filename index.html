@@ -342,7 +342,6 @@
         </div>
 
         <div class="ctrl-hud">
-            <button id="switch-music" class="btn-icon">🎵</button>
             <div id="vol-ctrl" class="vol-wrapper">
                 <div id="mute-icon" class="vol-icon">🔊</div>
                 <input type="range" id="vol-slider" class="vol-slider" min="0" max="100" value="100">
@@ -365,6 +364,16 @@
             <div class="stat-badge" style="margin-bottom:20px; pointer-events:auto; border-left-color:var(--caution-yellow)">
                 SALDO ATUAL: <span id="m-menu" style="color:var(--caution-yellow)">$0</span>
             </div>
+            
+            <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:10px; margin-bottom:20px; border:1px solid #444;">
+                <p style="font-size:0.8rem; margin-bottom:10px; color:#aaa">ESTILO DO NITRO</p>
+                <div style="display:flex; gap:10px;">
+                    <div class="n-sel active" data-n="nitro-blue" style="width:30px; height:30px; border-radius:5px; background:var(--nitro-blue); cursor:pointer; border:2px solid white;"></div>
+                    <div class="n-sel" data-n="#ff6600" style="width:30px; height:30px; border-radius:5px; background:#ff6600; cursor:pointer; border:2px solid transparent;"></div>
+                    <div class="n-sel" data-n="#00ff88" style="width:30px; height:30px; border-radius:5px; background:#00ff88; cursor:pointer; border:2px solid transparent;"></div>
+                </div>
+            </div>
+
             <button class="btn" id="start-btn">INICIAR CORRIDA</button>
             <button class="btn" style="background:#444" id="tut-btn">COMO JOGAR</button>
             <button class="btn" style="background:#444" id="garage-btn">GARAGEM</button>
@@ -387,7 +396,10 @@
         <!-- GARAGE -->
         <div id="scr-garage" class="screen hide">
             <h1 style="color:var(--safety-cyan)">GARAGEM</h1>
-            <div id="car-list" style="width:100%; max-height:60vh; overflow-y:auto; margin:15px 0;"></div>
+            <div class="stat-badge" style="margin:10px 0; pointer-events:auto; border-left-color:var(--caution-yellow)">
+                SEU SALDO: <span id="m-garage" style="color:var(--caution-yellow)">$0</span>
+            </div>
+            <div id="car-list" style="width:100%; max-height:55vh; overflow-y:auto; margin:15px 0; padding-right:10px;"></div>
             <button class="btn" id="exit-garage">VOLTAR</button>
         </div>
 
@@ -457,6 +469,7 @@
             sel: parseInt(localStorage.getItem('otr_314_s')) || 0,
             vol: isNaN(parseInt(localStorage.getItem('otr_314_vol'))) ? 100 : parseInt(localStorage.getItem('otr_314_vol')),
             muted: localStorage.getItem('otr_314_muted') === 'true',
+            nColor: localStorage.getItem('otr_314_nc') || '#00a8ff',
             hp: 100, d: 0, v: 0, act: false, started: false, px: 300, offset: 0, obs: [], qClock: 0, lt: 0, paused: false,
             nitro: 100, isNitro: false, nCD: 0, goal: 20000
         };
@@ -469,6 +482,7 @@
             localStorage.setItem('otr_314_s', game.sel);
             localStorage.setItem('otr_314_vol', game.vol);
             localStorage.setItem('otr_314_muted', game.muted);
+            localStorage.setItem('otr_314_nc', game.nColor);
             showSaveMsg();
         }
         function showSaveMsg() {
@@ -482,6 +496,7 @@
             const m = game.m || 0;
             document.getElementById('m-val').innerText = '$' + m;
             document.getElementById('m-menu').innerText = '$' + m;
+            document.getElementById('m-garage').innerText = '$' + m;
             document.getElementById('hp-bar').style.width = (game.hp || 0) + '%';
             document.getElementById('nitro-bar').style.width = (game.nitro || 0) + '%';
             document.getElementById('sp-num').innerText = Math.abs(Math.floor((game.v || 0) * 12));
@@ -491,16 +506,54 @@
         }
 
         function drawV(ctx, x, y, color, type) {
-            ctx.save(); ctx.translate(x, y); ctx.fillStyle = color;
+            ctx.save(); ctx.translate(x, y);
+            
+            // FOGO DO NITRO
+            if (game.isNitro && type === CARS[game.sel].t) {
+                ctx.fillStyle = game.nColor;
+                for(let i=0; i<3; i++) {
+                    ctx.beginPath();
+                    ctx.arc((Math.random()-0.5)*20, 45+Math.random()*40, 5+Math.random()*15, 0, Math.PI*2);
+                    ctx.fill();
+                }
+            }
+
+            ctx.fillStyle = color;
             if (type === 'f1') {
                 ctx.beginPath(); ctx.roundRect(-10, -50, 20, 35, 3); ctx.fill();
                 ctx.beginPath(); ctx.roundRect(-22, -15, 44, 45, 8); ctx.fill();
                 ctx.fillStyle = "#111"; ctx.fillRect(-35, -45, 70, 12); ctx.fillRect(-35, 25, 70, 15);
+            } else if (type === 'sport') {
+                // Design Esportivo Realista
+                ctx.beginPath(); ctx.roundRect(-25, -48, 50, 96, 12); ctx.fill(); // Corpo principal
+                ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(-20, -10, 40, 35); // Teto/Vidro
+                ctx.fillStyle = '#fff'; ctx.fillRect(-22, -44, 12, 5); ctx.fillRect(10, -44, 12, 5); // Faróis
+                ctx.fillStyle = color; ctx.fillRect(-30, 35, 60, 8); // Spoiler Traseiro
+                ctx.fillStyle = '#333'; ctx.fillRect(-22, -35, 44, 15); // Capô detalhes
+            } else if (type === 'suv') {
+                // Design SUV Robusto
+                ctx.beginPath(); ctx.roundRect(-26, -45, 52, 90, 5); ctx.fill();
+                ctx.fillStyle = '#333'; ctx.fillRect(-22, -40, 44, 10); // Grade frontal
+                ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(-20, -15, 40, 50); // Vidraça grande
+                ctx.fillStyle = '#666'; ctx.fillRect(-24, -20, 5, 60); ctx.fillRect(19, -20, 5, 60); // Racks de teto
+                ctx.fillStyle = '#ffaa00'; ctx.fillRect(-24, -43, 8, 4); ctx.fillRect(16, -43, 8, 4); // Faróis auxiliares
+            } else if (type === 'sedan') {
+                // Design Sedan Elegante
+                ctx.beginPath(); ctx.roundRect(-23, -47, 46, 94, 8); ctx.fill();
+                ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(-18, -12, 36, 40); // Vidros
+                ctx.fillStyle = '#ddd'; ctx.fillRect(-23, -47, 46, 5); // Para-choque frontal
+                ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(-15, -42, 4, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(15, -42, 4, 0, Math.PI*2); ctx.fill(); // Faróis redondos
             } else {
-                let w = type === 'suv' ? 50 : 44; ctx.beginPath(); ctx.roundRect(-w / 2, -45, w, 90, 10); ctx.fill();
-                ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.beginPath(); ctx.roundRect(-w / 2 + 5, -30, w - 10, 15, 2); ctx.fill();
+                // Hatch Realista
+                ctx.beginPath(); ctx.roundRect(-22, -42, 44, 84, 15); ctx.fill();
+                ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(-17, 5, 34, 25); // Vidro traseiro
+                ctx.fillStyle = '#fff'; ctx.fillRect(-18, -38, 10, 4); ctx.fillRect(8, -38, 10, 4); // Faróis
+                ctx.fillStyle = '#000'; ctx.fillRect(-15, 38, 30, 3); // Detalhe traseiro
             }
-            ctx.fillStyle = '#000'; ctx.fillRect(-28, -35, 8, 18); ctx.fillRect(20, -35, 8, 18); ctx.fillRect(-28, 25, 8, 20); ctx.fillRect(20, 25, 8, 20);
+            // RODAS
+            ctx.fillStyle = '#000'; 
+            ctx.fillRect(-29, -32, 7, 18); ctx.fillRect(22, -32, 7, 18); 
+            ctx.fillRect(-29, 22, 7, 18); ctx.fillRect(22, 22, 7, 18);
             ctx.restore();
         }
 
@@ -661,6 +714,18 @@
             document.getElementById('scr-menu').classList.add('hide');
             init(); game.act = true; game.lt = performance.now();
         };
+
+        // SELETOR DE NITRO
+        document.querySelectorAll('.n-sel').forEach(el => {
+            el.onclick = () => {
+                document.querySelectorAll('.n-sel').forEach(b => b.style.borderColor = 'transparent');
+                el.style.borderColor = 'white';
+                game.nColor = el.getAttribute('data-n');
+                save();
+            };
+            if (el.getAttribute('data-n') === game.nColor) el.style.borderColor = 'white';
+        });
+
         document.getElementById('tut-btn').onclick = () => document.getElementById('scr-tut').classList.remove('hide');
         document.getElementById('exit-tut').onclick = () => document.getElementById('scr-tut').classList.add('hide');
         document.getElementById('garage-btn').onclick = () => {
