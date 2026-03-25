@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Own the Road v3.14 | BALANCED UPDATE</title>
+    <title>F1 ON THE ROAD | FINAL VERSION</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@900&family=Space+Grotesk:wght@700&display=swap"
         rel="stylesheet">
     <style>
@@ -359,8 +359,8 @@
 
         <!-- MAIN MENU -->
         <div id="scr-menu" class="screen">
-            <h1 style="font-size:3.5rem; color:var(--f1-red); margin-bottom:10px; text-shadow:0 0 15px var(--f1-red);">
-                OWN THE ROAD</h1>
+            <h1 style="font-size:3rem; color:var(--f1-red); margin-bottom:10px; text-shadow:0 0 15px var(--f1-red); font-family:'Outfit'">
+                F1 ON THE ROAD</h1>
             <div class="stat-badge" style="margin-bottom:20px; pointer-events:auto; border-left-color:var(--caution-yellow)">
                 SALDO ATUAL: <span id="m-menu" style="color:var(--caution-yellow)">$0</span>
             </div>
@@ -480,7 +480,7 @@
             nColor: localStorage.getItem('otr_314_nc') || '#00a8ff',
             hp: 100, d: 0, v: 0, act: false, started: false, px: 300, offset: 0, obs: [], qClock: 0, lt: 0, paused: false,
             nitro: 100, isNitro: false, nCD: 0, goal: 20000,
-            roadEv: { active: false, color: '', clock: 0, next: 10, duration: 4 }
+            roadEv: { active: false, color: '', clock: 0, next: 10, duration: 6, y: -1000 }
         };
 
         const keys = {}; window.onkeydown = e => keys[e.key] = true; window.onkeyup = e => keys[e.key] = false;
@@ -534,36 +534,44 @@
                 ctx.beginPath(); ctx.roundRect(-22, -15, 44, 45, 8); ctx.fill();
                 ctx.fillStyle = "#111"; ctx.fillRect(-35, -45, 70, 12); ctx.fillRect(-35, 25, 70, 15);
             } else if (type === 'sport') {
-                // Design Esportivo Realista
-                ctx.beginPath(); ctx.roundRect(-25, -48, 50, 96, 12); ctx.fill(); // Corpo principal
-                ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(-20, -10, 40, 35); // Teto/Vidro
-                ctx.fillStyle = '#fff'; ctx.fillRect(-22, -44, 12, 5); ctx.fillRect(10, -44, 12, 5); // Faróis
-                ctx.fillStyle = color; ctx.fillRect(-30, 35, 60, 8); // Spoiler Traseiro
-                ctx.fillStyle = '#333'; ctx.fillRect(-22, -35, 44, 15); // Capô detalhes
+                ctx.beginPath(); ctx.roundRect(-25, -48, 50, 96, 12); ctx.fill(); 
+                ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(-20, -10, 40, 35); 
+                ctx.fillStyle = '#fff'; ctx.fillRect(-22, -44, 12, 5); ctx.fillRect(10, -44, 12, 5); 
+                ctx.fillStyle = color; ctx.fillRect(-30, 35, 60, 8); 
+                ctx.fillStyle = '#333'; ctx.fillRect(-22, -35, 44, 15); 
             } else if (type === 'suv') {
-                // Design SUV Robusto
                 ctx.beginPath(); ctx.roundRect(-26, -45, 52, 90, 5); ctx.fill();
-                ctx.fillStyle = '#333'; ctx.fillRect(-22, -40, 44, 10); // Grade frontal
-                ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(-20, -15, 40, 50); // Vidraça grande
-                ctx.fillStyle = '#666'; ctx.fillRect(-24, -20, 5, 60); ctx.fillRect(19, -20, 5, 60); // Racks de teto
-                ctx.fillStyle = '#ffaa00'; ctx.fillRect(-24, -43, 8, 4); ctx.fillRect(16, -43, 8, 4); // Faróis auxiliares
+                ctx.fillStyle = '#333'; ctx.fillRect(-22, -40, 44, 10); 
+                ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(-20, -15, 40, 50); 
+                ctx.fillStyle = '#666'; ctx.fillRect(-24, -20, 5, 60); ctx.fillRect(19, -20, 5, 60); 
+                ctx.fillStyle = '#ffaa00'; ctx.fillRect(-24, -43, 8, 4); ctx.fillRect(16, -43, 8, 4); 
             } else if (type === 'sedan') {
-                // Design Sedan Elegante
                 ctx.beginPath(); ctx.roundRect(-23, -47, 46, 94, 8); ctx.fill();
-                ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(-18, -12, 36, 40); // Vidros
-                ctx.fillStyle = '#ddd'; ctx.fillRect(-23, -47, 46, 5); // Para-choque frontal
-                ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(-15, -42, 4, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(15, -42, 4, 0, Math.PI*2); ctx.fill(); // Faróis redondos
+                ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(-18, -12, 36, 40); 
+                ctx.fillStyle = '#ddd'; ctx.fillRect(-23, -47, 46, 5); 
+                ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(-15, -42, 4, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(15, -42, 4, 0, Math.PI*2); ctx.fill(); 
             } else {
-                // Hatch Realista
                 ctx.beginPath(); ctx.roundRect(-22, -42, 44, 84, 15); ctx.fill();
-                ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(-17, 5, 34, 25); // Vidro traseiro
-                ctx.fillStyle = '#fff'; ctx.fillRect(-18, -38, 10, 4); ctx.fillRect(8, -38, 10, 4); // Faróis
-                ctx.fillStyle = '#000'; ctx.fillRect(-15, 38, 30, 3); // Detalhe traseiro
+                ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(-17, 5, 34, 25); 
+                ctx.fillStyle = '#fff'; ctx.fillRect(-18, -38, 10, 4); ctx.fillRect(8, -38, 10, 4); 
+                ctx.fillStyle = '#000'; ctx.fillRect(-15, 38, 30, 3); 
             }
-            // RODAS
             ctx.fillStyle = '#000'; 
             ctx.fillRect(-29, -32, 7, 18); ctx.fillRect(22, -32, 7, 18); 
             ctx.fillRect(-29, 22, 7, 18); ctx.fillRect(22, 22, 7, 18);
+            ctx.restore();
+        }
+
+        function drawPost(ctx, y, color) {
+            ctx.save(); ctx.translate(130, y);
+            // Poste
+            ctx.fillStyle = '#333'; ctx.fillRect(-5, 0, 10, 100);
+            // Caixa do farol
+            ctx.fillStyle = '#111'; ctx.beginPath(); ctx.roundRect(-15, -60, 30, 70, 5); ctx.fill();
+            // Luzes
+            ctx.fillStyle = color === 'red' ? '#f00' : '#300'; ctx.beginPath(); ctx.arc(0, -45, 5, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = color === 'yellow' ? '#ff0' : '#330'; ctx.beginPath(); ctx.arc(0, -25, 5, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = color === 'green' ? '#0f0' : '#030'; ctx.beginPath(); ctx.arc(0, -5, 5, 0, Math.PI*2); ctx.fill();
             ctx.restore();
         }
 
@@ -692,16 +700,18 @@
                     game.qClock += dt; 
                     if (game.qClock >= 10) popQuiz();
 
-                    // LÓGICA DO FAROL DE RUA
+                    // LÓGICA DO FAROL DE RUA (FÍSICO E HUD)
                     game.roadEv.clock += dt;
                     if (!game.roadEv.active && game.roadEv.clock >= game.roadEv.next) {
                         game.roadEv.active = true;
                         game.roadEv.clock = 0;
+                        game.roadEv.y = -200; // Começa no topo para descer
                         const rnd = Math.random();
                         game.roadEv.color = rnd < 0.33 ? 'red' : (rnd < 0.66 ? 'yellow' : 'green');
                         const rs = document.getElementById('road-signal');
                         const msg = document.getElementById('rs-msg');
                         rs.classList.remove('hide');
+                        // HUD RESET
                         document.getElementById('rs-red').style.background = '#200';
                         document.getElementById('rs-yellow').style.background = '#220';
                         document.getElementById('rs-green').style.background = '#020';
@@ -725,12 +735,13 @@
                     }
 
                     if (game.roadEv.active) {
-                        if (game.roadEv.clock >= game.roadEv.duration) {
+                        game.roadEv.y += game.v + 2; // O poste "passa" pelo jogador
+                        if (game.roadEv.clock >= game.roadEv.duration || game.roadEv.y > canvas.height + 500) {
                             game.roadEv.active = false;
                             game.roadEv.clock = 0;
                             document.getElementById('road-signal').classList.add('hide');
                         } else if (game.roadEv.color === 'red' && game.v > 3) {
-                            game.hp -= 0.5; // Dano contínuo se furar o sinal vermelho
+                            game.hp -= 0.5; 
                         }
                     }
                     
@@ -758,6 +769,7 @@
             ctx.setLineDash([40, 40]); ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.beginPath(); ctx.moveTo(300, -100 + game.offset); ctx.lineTo(300, canvas.height + 100 + game.offset); ctx.stroke();
 
             game.obs.forEach(o => drawV(ctx, o.x, o.y, o.c, o.t));
+            if (game.roadEv.active) drawPost(ctx, game.roadEv.y, game.roadEv.color);
             drawV(ctx, game.px, canvas.height - 180, CARS[game.sel].c, CARS[game.sel].t);
             requestAnimationFrame(loop);
         }
