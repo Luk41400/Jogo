@@ -480,7 +480,7 @@
             nColor: localStorage.getItem('otr_314_nc') || '#00a8ff',
             hp: 100, d: 0, v: 0, act: false, started: false, px: 300, offset: 0, obs: [], qClock: 0, lt: 0, paused: false,
             nitro: 100, isNitro: false, nCD: 0, goal: 20000,
-            roadEv: { active: false, color: '', clock: 0, next: 10, duration: 6, y: -1000 }
+            roadEv: { active: false, color: '', clock: 0, next: 8, duration: 6, y: -1000, triggered: false }
         };
 
         const keys = {}; window.onkeydown = e => keys[e.key] = true; window.onkeyup = e => keys[e.key] = false;
@@ -563,15 +563,21 @@
         }
 
         function drawPost(ctx, y, color) {
-            ctx.save(); ctx.translate(130, y);
-            // Poste
-            ctx.fillStyle = '#333'; ctx.fillRect(-5, 0, 10, 100);
-            // Caixa do farol
-            ctx.fillStyle = '#111'; ctx.beginPath(); ctx.roundRect(-15, -60, 30, 70, 5); ctx.fill();
-            // Luzes
-            ctx.fillStyle = color === 'red' ? '#f00' : '#300'; ctx.beginPath(); ctx.arc(0, -45, 5, 0, Math.PI*2); ctx.fill();
-            ctx.fillStyle = color === 'yellow' ? '#ff0' : '#330'; ctx.beginPath(); ctx.arc(0, -25, 5, 0, Math.PI*2); ctx.fill();
-            ctx.fillStyle = color === 'green' ? '#0f0' : '#030'; ctx.beginPath(); ctx.arc(0, -5, 5, 0, Math.PI*2); ctx.fill();
+            ctx.save(); ctx.translate(300, y);
+            // Estrutura Superior (Overhead Gantry)
+            ctx.fillStyle = '#222'; ctx.fillRect(-170, -110, 340, 15); // Viga superior
+            ctx.fillStyle = '#333'; ctx.fillRect(-175, -110, 15, 200); ctx.fillRect(160, -110, 15, 200); // Postes laterais
+            // Caixa do farol centralizada na viga
+            ctx.fillStyle = '#111'; ctx.beginPath(); ctx.roundRect(-20, -145, 40, 90, 5); ctx.fill();
+            // Luzes maiores e brilhantes
+            ctx.fillStyle = color === 'red' ? '#f00' : '#300'; ctx.beginPath(); ctx.arc(0, -130, 8, 0, Math.PI*2); ctx.fill();
+            if(color === 'red') { ctx.shadowBlur = 15; ctx.shadowColor = '#f00'; ctx.beginPath(); ctx.arc(0, -130, 8, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur = 0; }
+            
+            ctx.fillStyle = color === 'yellow' ? '#ff0' : '#330'; ctx.beginPath(); ctx.arc(0, -110, 8, 0, Math.PI*2); ctx.fill();
+            if(color === 'yellow') { ctx.shadowBlur = 15; ctx.shadowColor = '#ff0'; ctx.beginPath(); ctx.arc(0, -110, 8, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur = 0; }
+            
+            ctx.fillStyle = color === 'green' ? '#0f0' : '#030'; ctx.beginPath(); ctx.arc(0, -90, 8, 0, Math.PI*2); ctx.fill();
+            if(color === 'green') { ctx.shadowBlur = 15; ctx.shadowColor = '#0f0'; ctx.beginPath(); ctx.arc(0, -90, 8, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur = 0; }
             ctx.restore();
         }
 
@@ -698,16 +704,16 @@
 
                 if (game.started) {
                     game.qClock += dt; 
-                    if (game.qClock >= 10) popQuiz();
-
+                    
                     // LÓGICA DO FAROL DE RUA (FÍSICO E HUD)
                     game.roadEv.clock += dt;
                     if (!game.roadEv.active && game.roadEv.clock >= game.roadEv.next) {
                         game.roadEv.active = true;
                         game.roadEv.clock = 0;
-                        game.roadEv.y = -200; // Começa no topo para descer
+                        game.roadEv.y = -300;
+                        game.roadEv.triggered = false; 
                         const rnd = Math.random();
-                        game.roadEv.color = rnd < 0.33 ? 'red' : (rnd < 0.66 ? 'yellow' : 'green');
+                        game.roadEv.color = rnd < 0.45 ? 'red' : (rnd < 0.7 ? 'yellow' : 'green');
                         const rs = document.getElementById('road-signal');
                         const msg = document.getElementById('rs-msg');
                         rs.classList.remove('hide');
@@ -735,24 +741,39 @@
                     }
 
                     if (game.roadEv.active) {
-                        game.roadEv.y += game.v + 2; // O poste "passa" pelo jogador
-                        if (game.roadEv.clock >= game.roadEv.duration || game.roadEv.y > canvas.height + 500) {
+                        game.roadEv.y += game.v; 
+                        
+                        // Detecção de gatilho do Quiz ao parar no Vermelho
+                        if (game.roadEv.color === 'red' && game.v < 0.5 && !game.roadEv.triggered && game.roadEv.y > 0 && game.roadEv.y < canvas.height - 200) {
+                            game.roadEv.triggered = true;
+                            // Dá um pequeno delay para o jogador ver que parou
+                            setTimeout(() => {
+                                if (game.roadEv.active) {
+                                    game.roadEv.active = false;
+                                    document.getElementById('road-signal').classList.add('hide');
+                                    popQuiz();
+                                }
+                            }, 500);
+                        }
+
+                        if (game.roadEv.clock >= game.roadEv.duration || game.roadEv.y > canvas.height + 400) {
                             game.roadEv.active = false;
                             game.roadEv.clock = 0;
                             document.getElementById('road-signal').classList.add('hide');
-                        } else if (game.roadEv.color === 'red' && game.v > 3) {
-                            game.hp -= 0.5; 
+                        } else if (game.roadEv.color === 'red' && game.v > 3 && game.roadEv.y > 200 && game.roadEv.y < 600) {
+                            game.hp -= 0.6; // Dano se passar correndo no farol vermelho
                         }
                     }
                     
                     const diffScale = 1 + (game.d / game.goal) * 2.5;
                     game.obs.forEach(o => { 
                         o.y += game.v + (o.sp * diffScale); 
-                        if (Math.abs(o.x - game.px) < 40 && Math.abs(o.y - (canvas.height - 180)) < 75) { 
+                        // Colisão ajustada para ignorar quando parado no farol
+                        if (game.v > 1 && Math.abs(o.x - game.px) < 40 && Math.abs(o.y - (canvas.height - 180)) < 75) { 
                             game.hp -= 0.8; game.v *= 0.85; 
                         } 
                         if (o.y > canvas.height + 300) { 
-                            let topY = 0;
+                            let topY = Math.min(-300, game.roadEv.active ? game.roadEv.y : 0);
                             game.obs.forEach(ext => { if(ext.y < topY) topY = ext.y; });
                             o.y = topY - (800 + Math.random() * 400); 
                             o.x = 180 + Math.random() * 240; 
