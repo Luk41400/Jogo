@@ -444,7 +444,7 @@
             m: parseInt(localStorage.getItem('otr_314_m')) || 0,
             o: JSON.parse(localStorage.getItem('otr_314_o')) || [0],
             sel: parseInt(localStorage.getItem('otr_314_s')) || 0,
-            vol: parseInt(localStorage.getItem('otr_314_vol')) ?? 100,
+            vol: isNaN(parseInt(localStorage.getItem('otr_314_vol'))) ? 100 : parseInt(localStorage.getItem('otr_314_vol')),
             muted: localStorage.getItem('otr_314_muted') === 'true',
             hp: 100, d: 0, v: 0, act: false, started: false, px: 300, offset: 0, obs: [], qClock: 0, lt: 0, paused: false,
             nitro: 100, isNitro: false, nCD: 0, goal: 20000
@@ -468,12 +468,12 @@
             setTimeout(() => msg.remove(), 2000);
         }
         function syncHUD() {
-            document.getElementById('m-val').innerText = '$' + game.m;
-            document.getElementById('hp-bar').style.width = game.hp + '%';
-            document.getElementById('nitro-bar').style.width = game.nitro + '%';
-            document.getElementById('sp-num').innerText = Math.abs(Math.floor(game.v * 12));
-            document.getElementById('dist-txt').innerText = Math.floor(game.d / 10);
-            document.getElementById('p-marker').style.bottom = Math.min(295, (game.d / game.goal) * 295) + 'px';
+            document.getElementById('m-val').innerText = '$' + (game.m || 0);
+            document.getElementById('hp-bar').style.width = (game.hp || 0) + '%';
+            document.getElementById('nitro-bar').style.width = (game.nitro || 0) + '%';
+            document.getElementById('sp-num').innerText = Math.abs(Math.floor((game.v || 0) * 12));
+            document.getElementById('dist-txt').innerText = Math.floor((game.d || 0) / 10);
+            document.getElementById('p-marker').style.bottom = Math.min(295, ((game.d || 0) / game.goal) * 295) + 'px';
         }
 
         function drawV(ctx, x, y, color, type) {
@@ -491,10 +491,10 @@
         }
 
         let qInterval;
-        let nextObsY = -1000; // Gerenciador global de spawn
+        let nextObsY = -1000;
 
         function popQuiz() {
-            if (!game.act && document.getElementById('scr-quiz').classList.contains('hide') === false) return; // Evita abrir múltiplo
+            if (!game.act && document.getElementById('scr-quiz').classList.contains('hide') === false) return;
             
             game.act = false; 
             const q = QUIZ_LIST[Math.floor(Math.random() * QUIZ_LIST.length)];
@@ -506,7 +506,7 @@
             document.getElementById('q-txt').innerText = q.q; 
             qBox.innerHTML = ''; 
             card.style.background = "#111";
-            qBox.style.pointerEvents = 'auto'; // Habilita cliques ao iniciar
+            qBox.style.pointerEvents = 'auto';
 
             let tl = 10; 
             timerTxt.innerText = tl;
@@ -516,7 +516,6 @@
                 if (answered) return;
                 answered = true;
                 
-                // Trava TOTAL imediata
                 qBox.style.pointerEvents = 'none'; 
                 const buttons = qBox.querySelectorAll('button');
                 buttons.forEach(btn => btn.disabled = true);
@@ -526,19 +525,18 @@
                 if (isC) { 
                     card.style.background = "#2ecc71"; 
                     game.m += 150; 
-                    syncHUD(); // Atualiza o saldo NA HORA para o jogador ver
-                    save(); 
                 } else { 
                     card.style.background = "#e74c3c"; 
                     game.hp = Math.max(0, game.hp - 30); 
-                    syncHUD();
                 }
+                syncHUD();
+                save();
                 
                 setTimeout(() => { 
                     scr.classList.add('hide'); 
                     game.act = true; 
                     game.qClock = 0; 
-                    game.lt = performance.now(); // Reseta o tempo para evitar pulos
+                    game.lt = performance.now();
                 }, 1000);
             };
 
@@ -566,17 +564,10 @@
 
         function init() {
             game.hp = 100; game.d = 0; game.v = 0; game.px = 300; game.qClock = 0; game.started = false; game.obs = []; game.nitro = 100; game.nCD = 0;
-            nextObsY = -1000;
-            // Inicialização com distância segura garantida
+            nextObsY = -800;
             for (let i = 0; i < 12; i++) {
-                game.obs.push({ 
-                    x: 180 + Math.random() * 240, 
-                    y: nextObsY, 
-                    c: '#444', 
-                    t: 'sedan', 
-                    sp: 1.5 
-                });
-                nextObsY -= 700; // 700px de distância fixa entre cada um no início
+                game.obs.push({ x: 180 + Math.random() * 240, y: nextObsY, c: '#444', t: 'sedan', sp: 1.5 });
+                nextObsY -= 800; // Espaçamento massivo inicial
             }
         }
 
@@ -605,20 +596,13 @@
                     const diffScale = 1 + (game.d / game.goal) * 2.5;
                     game.obs.forEach(o => { 
                         o.y += game.v + (o.sp * diffScale); 
-                        
-                        // Colisão ajustada
                         if (Math.abs(o.x - game.px) < 40 && Math.abs(o.y - (canvas.height - 180)) < 75) { 
-                            game.hp -= 0.8; 
-                            game.v *= 0.85; 
+                            game.hp -= 0.8; game.v *= 0.85; 
                         } 
-                        
-                        // Sistema de Fila Infinita (Evita sobreposição)
                         if (o.y > canvas.height + 300) { 
-                            // Encontra o ponto mais alto atual entre todos
                             let topY = 0;
                             game.obs.forEach(ext => { if(ext.y < topY) topY = ext.y; });
-                            
-                            o.y = topY - (600 + Math.random() * 300); // Garante 600px+ de distância do carro mais alto
+                            o.y = topY - (800 + Math.random() * 400); 
                             o.x = 180 + Math.random() * 240; 
                         } 
                     });
@@ -637,7 +621,6 @@
             requestAnimationFrame(loop);
         }
 
-        // UI BUTTONS
         document.getElementById('start-btn').onclick = () => {
             audio.src = PLAYLIST[cTrack].src;
             audio.play().catch(e => console.log("User must interact first"));
@@ -664,7 +647,8 @@
         const muteIcon = document.getElementById('mute-icon');
 
         function updateAudio() {
-            audio.volume = game.vol / 100;
+            if (isNaN(game.vol)) game.vol = 100;
+            audio.volume = Math.max(0, Math.min(1, game.vol / 100));
             audio.muted = game.muted || game.vol === 0;
             muteIcon.innerText = audio.muted ? "🔇" : "🔊";
             volSlider.value = game.vol;
@@ -681,7 +665,6 @@
             }
         };
 
-        // Also allow clicking the wrapper when it's closed to open it
         volCtrl.onclick = (e) => {
             if (!volCtrl.classList.contains('active')) {
                 volCtrl.classList.add('active');
@@ -691,13 +674,13 @@
 
         volSlider.oninput = (e) => {
             game.vol = parseInt(e.target.value);
+            if (isNaN(game.vol)) game.vol = 100;
             game.muted = game.vol === 0;
             updateAudio();
         };
 
         volSlider.onchange = () => save();
 
-        // Close slider when clicking outside or pressing ESC
         window.addEventListener('click', (e) => {
             if (!volCtrl.contains(e.target) && volCtrl.classList.contains('active')) {
                 volCtrl.classList.remove('active');
