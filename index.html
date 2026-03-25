@@ -479,23 +479,36 @@
         const QUIZ_LIST = {
             red: [
                 { q: "The light turned red. What should you do?", a: "Come to a full stop", o: ["Accelerate more", "Cross with caution", "Honk and cross"] },
-                { q: "What is the penalty for running a red light?", a: "Very Severe Fine", o: ["None", "Just a warning", "Light Fine"] },
+                { q: "Penalty for running a red light?", a: "Very Severe Fine", o: ["None", "Just a warning", "Light Fine"] },
                 { q: "At a red light, does the pedestrian have priority?", a: "Always", o: ["Never", "Only if senior", "Only with guards"] },
-                { q: "Stopping over the crosswalk on a red light is:", a: "Traffic violation", o: ["Permitted", "Recommended", "Optional"] }
+                { q: "Stopping over the crosswalk on a red light is:", a: "Traffic violation", o: ["Permitted", "Recommended", "Optional"] },
+                { q: "An ambulance with sirens is behind you at a red light. You should:", a: "Carefully give way", o: ["Stay still", "Wait for green", "Honk back"] },
+                { q: "In Brazil, can you turn right on red?", a: "Only if a sign permits", o: ["Always", "Never", "Only on Sundays"] },
+                { q: "How far should you stop from the white line?", a: "Before the line", o: ["On the line", "After the line", "Touching it"] }
             ],
             yellow: [
-                { q: "The light turned yellow. What is the correct behavior?", a: "Slow down and stop", o: ["Accelerate quickly", "Brake suddenly", "Maintain speed"] },
-                { q: "What does the yellow light indicate?", a: "Attention: about to close", o: ["Acelerate", "Light broken", "Turn right"] },
-                { q: "When seeing yellow, should you accelerate to pass?", a: "No, danger of accident", o: ["Yes, always", "Only if far", "If no guards"] },
-                { q: "What does a flashing yellow light mean?", a: "Caution: check surroundings", o: ["Go full speed", "Stop the car", "Turn back"] }
+                { q: "What is the correct behavior for a yellow light?", a: "Slow down and stop", o: ["Accelerate quickly", "Brake suddenly", "Maintain speed"] },
+                { q: "What does the yellow light indicate?", a: "Attention: about to close", o: ["Go full speed", "Light broken", "Turn right"] },
+                { q: "Is it safe to accelerate on yellow?", a: "No, high risk of accident", o: ["Yes, always", "Only if far", "If no guards"] },
+                { q: "A flashing yellow light at an intersection means:", a: "Caution: check surroundings", o: ["Go full speed", "Stop the car", "Turn back"] },
+                { q: "You see yellow but are too close to stop safely. You should:", a: "Cross with caution", o: ["Brake hard", "Close eyes", "Stop in the middle"] },
+                { q: "Tailgating someone who might stop at yellow is:", a: "Dangerous and illegal", o: ["Good driving", "Efficient", "Recommended"] }
+            ],
+            green: [
+                { q: "The light is green but the intersection is blocked. Do you:", a: "Wait before the line", o: ["Enter anyway", "Honk loudly", "Reverse"] },
+                { q: "Signal turned green. What is the first thing to check?", a: "If crossing is clear", o: ["Your phone", "The radio", "Tire pressure"] },
+                { q: "Driving through a green light at high speed is:", a: "Unsafe at intersections", o: ["Correct", "Professional", "Required"] },
+                { q: "Pedestrians are still crossing on your green light. You must:", a: "Wait for them to finish", o: ["Honk to move them", "Drive around them", "Call police"] },
+                { q: "On a green light, turning without looking at mirrors is:", a: "A major safety risk", o: ["Allowed", "Fast", "Normal"] }
             ],
             general: [
                 { q: "Safe side distance for passing a cyclist?", a: "1.5 meters", o: ["0.5m", "Close", "10 meters"] },
-                { q: "Do alcohol and driving mix?", a: "Never, total danger!", o: ["Just a bit", "Yes, if slow", "Only on parties"] },
-                { q: "Is seatbelt usage mandatory?", a: "For everyone in vehicle", o: ["Only for driver", "Only on highways", "It is optional"] },
-                { q: "Using a cell phone while driving causes:", a: "Distraction and accidents", o: ["Better reflexes", "No problem", "Just light fine"] },
-                { q: "Penalty for not using a seatbelt?", a: "Traffic fine & safety risk", o: ["No penalty", "Just a bonus", "Car seizure"] },
-                { q: "The 'STOP' sign requires the driver to:", a: "Fully immobilize vehicle", o: ["Just slow down", "Honk and go", "Change gears"] }
+                { q: "Seatbelt usage is mandatory for:", a: "Everyone in the vehicle", o: ["Only driver", "Only front seats", "Older cars only"] },
+                { q: "Using a phone while driving increases accident risk by:", a: "400%", o: ["10%", "0%", "2%"] },
+                { q: "When should you use high beam lights?", a: "Only on unlit roads", o: ["In the city", "Behind other cars", "Always"] },
+                { q: "Proper way to hold the steering wheel?", a: "Hands at 9 and 3", o: ["One hand only", "On the bottom", "With knees"] },
+                { q: "Meaning of a blue road sign?", a: "Services and info", o: ["Danger", "Stopped", "Prohibited"] },
+                { q: "Correct action when hydroplaning on rain?", a: "Softly lift acceleration", o: ["Brake hard", "Accelerate", "Turn wheel fast"] }
             ]
         };
 
@@ -758,12 +771,10 @@
                         
                         showPopup("🚦 TRAFFIC LIGHT AHEAD!!", "white");
 
-                        // LANÇA A PERGUNTA NO VERMELHO OU AMARELO SINCRONIZADA COM DELAY
-                        if(game.roadEv.color === 'red' || game.roadEv.color === 'yellow') {
-                            setTimeout(() => {
-                                if (game.roadEv.active) popQuiz(game.roadEv.color);
-                            }, 1200); // 1.2 segundos depois da mensagem
-                        }
+                        // LANÇA A PERGUNTA SINCRONIZADA EM TODAS AS CORES
+                        setTimeout(() => {
+                            if (game.roadEv.active) popQuiz(game.roadEv.color);
+                        }, 1200); // 1.2 segundos depois da mensagem
                     }
 
                     if (game.roadEv.active) {
