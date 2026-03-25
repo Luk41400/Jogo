@@ -368,7 +368,7 @@
             <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:10px; margin-bottom:20px; border:1px solid #444;">
                 <p style="font-size:0.8rem; margin-bottom:10px; color:#aaa">ESTILO DO NITRO</p>
                 <div style="display:flex; gap:10px;">
-                    <div class="n-sel active" data-n="nitro-blue" style="width:30px; height:30px; border-radius:5px; background:var(--nitro-blue); cursor:pointer; border:2px solid white;"></div>
+                    <div class="n-sel active" data-n="#00a8ff" style="width:30px; height:30px; border-radius:5px; background:var(--nitro-blue); cursor:pointer; border:2px solid white;"></div>
                     <div class="n-sel" data-n="#ff6600" style="width:30px; height:30px; border-radius:5px; background:#ff6600; cursor:pointer; border:2px solid transparent;"></div>
                     <div class="n-sel" data-n="#00ff88" style="width:30px; height:30px; border-radius:5px; background:#00ff88; cursor:pointer; border:2px solid transparent;"></div>
                 </div>
@@ -466,7 +466,7 @@
         let game = {
             m: parseInt(localStorage.getItem('otr_314_m')) || 0,
             o: JSON.parse(localStorage.getItem('otr_314_o')) || [0],
-            sel: parseInt(localStorage.getItem('otr_314_s')) || 0,
+            sel: Math.min(parseInt(localStorage.getItem('otr_314_s')) || 0, CARS.length - 1),
             vol: isNaN(parseInt(localStorage.getItem('otr_314_vol'))) ? 100 : parseInt(localStorage.getItem('otr_314_vol')),
             muted: localStorage.getItem('otr_314_muted') === 'true',
             nColor: localStorage.getItem('otr_314_nc') || '#00a8ff',
@@ -509,7 +509,8 @@
             ctx.save(); ctx.translate(x, y);
             
             // FOGO DO NITRO
-            if (game.isNitro && type === CARS[game.sel].t) {
+            const playerCar = CARS[game.sel];
+            if (playerCar && game.isNitro && type === playerCar.t) {
                 ctx.fillStyle = game.nColor;
                 for(let i=0; i<3; i++) {
                     ctx.beginPath();
