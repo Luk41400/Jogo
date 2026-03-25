@@ -462,11 +462,28 @@
             { id: 4, n: "F1 MONOPOSTO", p: 6000, s: 65, a: 4.5, c: "#e10600", t: 'f1', g: 250000 }
         ];
 
-        const QUIZ_LIST = [
-            { q: "Qual a distância segura do ciclista?", a: "1,5 metro", o: ["0,5m", "Perto", "10m"] },
-            { q: "Sinal Amarelo significa:", a: "Parar se puder", o: ["Acelerar", "Buzinar", "Passar rápido"] },
-            { q: "Álcool e Direção?", a: "Jamais!", o: ["1 Taça", "Sempre OK", "Só feriado"] }
-        ];
+        const QUIZ_LIST = {
+            red: [
+                { q: "O farol ficou vermelho. O que você deve fazer?", a: "Parar totalmente", o: ["Acelerar mais", "Passar com cuidado", "Buzinar e passar"] },
+                { q: "Qual a penalidade por furar o sinal vermelho?", a: "Multa Gravíssima", o: ["Nenhuma", "Apenas advertência", "Multa Leve"] },
+                { q: "No sinal vermelho, o pedestre tem prioridade?", a: "Sempre", o: ["Nunca", "Só se for idoso", "Só se tiver guarda"] },
+                { q: "Parar sobre a faixa de pedestres no sinal vermelho é:", a: "Infração de trânsito", o: ["Permitido", "Recomendado", "Opcional"] }
+            ],
+            yellow: [
+                { q: "O sinal ficou amarelo. Qual o comportamento correto?", a: "Reduzir e parar", o: ["Acelerar rápido", "Frear bruscamente", "Manter a velocidade"] },
+                { q: "O sinal amarelo serve para indicar o quê?", a: "Atenção: vai fechar", o: ["Pode acelerar", "Sinal quebrado", "Vire à direita"] },
+                { q: "Ao ver o amarelo, você deve acelerar para passar?", a: "Não, perigo de acidente", o: ["Sim, sempre", "Só se estiver longe", "Se não houver guardas"] },
+                { q: "O que significa a luz amarela intermitente?", a: "Atenção redobrada", o: ["Siga em frente", "Pare o carro", "Retorne"] }
+            ],
+            general: [
+                { q: "Qual a distância segura lateral de um ciclista?", a: "1,5 metro", o: ["0,5m", "Perto", "10 metros"] },
+                { q: "Álcool e Direção combinam?", a: "Nunca, perigo total!", o: ["Só um pouco", "Sim, se for devagar", "Só em festas"] },
+                { q: "O uso do cinto de segurança é obrigatório?", a: "Para todos no veículo", o: ["Só para o motorista", "Apenas em rodovias", "Não é obrigatório"] },
+                { q: "Utilizar o celular enquanto dirige causa:", a: "Distração e acidentes", o: ["Melhor reflexo", "Nenhum problema", "Apenas multa leve"] },
+                { q: "Qual o limite de velocidade em vias residenciais?", a: "30 a 40 km/h", o: ["80 km/h", "110 km/h", "Não tem limite"] },
+                { q: "A placa de 'PARE' obriga o condutor a:", a: "Imobilizar o veículo", o: ["Apenas diminuir", "Buzinar e seguir", "Mudar de marcha"] }
+            ]
+        };
 
         let game = {
             m: parseInt(localStorage.getItem('otr_314_m')) || 0,
@@ -590,11 +607,13 @@
         let qInterval;
         let nextObsY = -1000;
 
-        function popQuiz() {
+        function popQuiz(type) {
             const scr = document.getElementById('scr-quiz');
             if (scr && !scr.classList.contains('hide')) return;
             
-            const q = QUIZ_LIST[Math.floor(Math.random() * QUIZ_LIST.length)];
+            // FILTRA PERGUNTA PELA COR OU GERAL
+            const pool = QUIZ_LIST[type] || QUIZ_LIST.general;
+            const q = pool[Math.floor(Math.random() * pool.length)];
             const card = scr.querySelector('div'); 
             const timerTxt = scr.querySelector('#q-timer'); 
             const qBox = scr.querySelector('#q-box');
@@ -720,8 +739,8 @@
                         const rnd = Math.random();
                         game.roadEv.color = rnd < 0.6 ? 'red' : (rnd < 0.8 ? 'yellow' : 'green');
                         
-                        // LANÇA A PERGUNTA NO VERMELHO OU AMARELO
-                        if(game.roadEv.color === 'red' || game.roadEv.color === 'yellow') popQuiz();
+                        // LANÇA A PERGUNTA NO VERMELHO OU AMARELO SINCRONIZADA
+                        if(game.roadEv.color === 'red' || game.roadEv.color === 'yellow') popQuiz(game.roadEv.color);
                     }
 
                     if (game.roadEv.active) {
