@@ -591,10 +591,10 @@
         let nextObsY = -1000;
 
         function popQuiz() {
-            if (document.getElementById('scr-quiz').classList.contains('hide') === false) return;
+            const scr = document.getElementById('scr-quiz');
+            if (scr && !scr.classList.contains('hide')) return;
             
             const q = QUIZ_LIST[Math.floor(Math.random() * QUIZ_LIST.length)];
-            const scr = document.getElementById('scr-quiz');
             const card = scr.querySelector('div'); 
             const timerTxt = scr.querySelector('#q-timer'); 
             const qBox = scr.querySelector('#q-box');
@@ -754,8 +754,20 @@
                         } 
                     });
                 }
-                if (game.hp <= 0) { game.act = false; document.getElementById('res-title').innerText = "FALHA"; document.getElementById('scr-res').classList.remove('hide'); }
-                if (game.d >= game.goal) { game.act = false; game.m += 500; save(); document.getElementById('res-title').innerText = "VITÓRIA!"; document.getElementById('scr-res').classList.remove('hide'); }
+                if (game.hp <= 0) { 
+                    game.act = false; 
+                    document.getElementById('scr-quiz').classList.add('hide'); // SEGURANÇA
+                    document.getElementById('res-title').innerText = "FALHA"; 
+                    document.getElementById('scr-res').classList.remove('hide'); 
+                }
+                if (game.d >= game.goal) { 
+                    game.act = false; 
+                    game.m += 500; 
+                    save(); 
+                    document.getElementById('scr-quiz').classList.add('hide'); // SEGURANÇA
+                    document.getElementById('res-title').innerText = "VITÓRIA!"; 
+                    document.getElementById('scr-res').classList.remove('hide'); 
+                }
                 syncHUD();
             } else { game.lt = now; }
 
