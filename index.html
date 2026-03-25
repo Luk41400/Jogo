@@ -383,7 +383,12 @@
             let tl = 10; timerTxt.innerText = tl;
             const endQ = (isC) => {
                 clearInterval(qInterval);
-                if (isC) { card.style.background = "#2ecc71"; game.m += 150; save(); }
+                if (isC) { 
+                    card.style.background = "#2ecc71"; 
+                    game.m += 150; 
+                    game.hp = Math.min(100, game.hp + 10);
+                    save(); 
+                }
                 else { card.style.background = "#e74c3c"; game.hp = Math.max(0, game.hp - 30); }
                 setTimeout(() => { scr.classList.add('hide'); game.act = true; game.qClock = 0; }, 1000);
             };
