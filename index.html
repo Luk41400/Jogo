@@ -491,7 +491,11 @@
         }
 
         let qInterval;
+        let nextObsY = -1000; // Gerenciador global de spawn
+
         function popQuiz() {
+            if (!game.act && document.getElementById('scr-quiz').classList.contains('hide') === false) return; // Evita abrir múltiplo
+            
             game.act = false; 
             const q = QUIZ_LIST[Math.floor(Math.random() * QUIZ_LIST.length)];
             const scr = document.getElementById('scr-quiz');
@@ -502,7 +506,7 @@
             document.getElementById('q-txt').innerText = q.q; 
             qBox.innerHTML = ''; 
             card.style.background = "#111";
-            qBox.style.pointerEvents = 'auto';
+            qBox.style.pointerEvents = 'auto'; // Habilita cliques ao iniciar
 
             let tl = 10; 
             timerTxt.innerText = tl;
@@ -511,22 +515,30 @@
             const endQ = (isC) => {
                 if (answered) return;
                 answered = true;
-                qBox.style.pointerEvents = 'none'; // Trava imediata de cliques
+                
+                // Trava TOTAL imediata
+                qBox.style.pointerEvents = 'none'; 
+                const buttons = qBox.querySelectorAll('button');
+                buttons.forEach(btn => btn.disabled = true);
+                
                 clearInterval(qInterval);
 
                 if (isC) { 
                     card.style.background = "#2ecc71"; 
                     game.m += 150; 
+                    syncHUD(); // Atualiza o saldo NA HORA para o jogador ver
                     save(); 
                 } else { 
                     card.style.background = "#e74c3c"; 
                     game.hp = Math.max(0, game.hp - 30); 
+                    syncHUD();
                 }
                 
                 setTimeout(() => { 
                     scr.classList.add('hide'); 
                     game.act = true; 
                     game.qClock = 0; 
+                    game.lt = performance.now(); // Reseta o tempo para evitar pulos
                 }, 1000);
             };
 
@@ -543,11 +555,8 @@
                 b.style.width = "100%";
                 b.onclick = (e) => {
                     e.preventDefault();
-                    if (opt === q.a) {
-                        b.style.background = "#27ae60"; // Feedback instantâneo no botão
-                    } else {
-                        b.style.background = "#c0392b";
-                    }
+                    if (opt === q.a) b.style.background = "#27ae60";
+                    else b.style.background = "#c0392b";
                     endQ(opt === q.a);
                 };
                 qBox.appendChild(b);
@@ -557,15 +566,17 @@
 
         function init() {
             game.hp = 100; game.d = 0; game.v = 0; game.px = 300; game.qClock = 0; game.started = false; game.obs = []; game.nitro = 100; game.nCD = 0;
-            // Inicialização com espaçamento vertical garantido
-            for (let i = 0; i < 15; i++) {
+            nextObsY = -1000;
+            // Inicialização com distância segura garantida
+            for (let i = 0; i < 12; i++) {
                 game.obs.push({ 
                     x: 180 + Math.random() * 240, 
-                    y: -(i * 600) - 1000, // Espaçamento fixo entre eles
+                    y: nextObsY, 
                     c: '#444', 
                     t: 'sedan', 
                     sp: 1.5 
                 });
+                nextObsY -= 700; // 700px de distância fixa entre cada um no início
             }
         }
 
@@ -595,19 +606,19 @@
                     game.obs.forEach(o => { 
                         o.y += game.v + (o.sp * diffScale); 
                         
-                        // Detecção de Colisão
-                        if (Math.abs(o.x - game.px) < 45 && Math.abs(o.y - (canvas.height - 180)) < 85) { 
-                            game.hp -= 0.6; 
-                            game.v *= 0.9; 
+                        // Colisão ajustada
+                        if (Math.abs(o.x - game.px) < 40 && Math.abs(o.y - (canvas.height - 180)) < 75) { 
+                            game.hp -= 0.8; 
+                            game.v *= 0.85; 
                         } 
                         
-                        // Reset Dinâmico sem Sobreposições
-                        if (o.y > canvas.height + 200) { 
-                            // Encontrar o obstáculo mais distante no topo
-                            let highestY = -500;
-                            game.obs.forEach(other => { if(other.y < highestY) highestY = other.y; });
+                        // Sistema de Fila Infinita (Evita sobreposição)
+                        if (o.y > canvas.height + 300) { 
+                            // Encontra o ponto mais alto atual entre todos
+                            let topY = 0;
+                            game.obs.forEach(ext => { if(ext.y < topY) topY = ext.y; });
                             
-                            o.y = highestY - (400 + Math.random() * 400); // 400px de distância mínima no topo
+                            o.y = topY - (600 + Math.random() * 300); // Garante 600px+ de distância do carro mais alto
                             o.x = 180 + Math.random() * 240; 
                         } 
                     });
