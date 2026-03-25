@@ -744,8 +744,12 @@
                         
                         showPopup("🚦 FAROL À FRENTE!!", "white");
 
-                        // LANÇA A PERGUNTA NO VERMELHO OU AMARELO SINCRONIZADA
-                        if(game.roadEv.color === 'red' || game.roadEv.color === 'yellow') popQuiz(game.roadEv.color);
+                        // LANÇA A PERGUNTA NO VERMELHO OU AMARELO SINCRONIZADA COM DELAY
+                        if(game.roadEv.color === 'red' || game.roadEv.color === 'yellow') {
+                            setTimeout(() => {
+                                if (game.roadEv.active) popQuiz(game.roadEv.color);
+                            }, 1200); // 1.2 segundos depois da mensagem
+                        }
                     }
 
                     if (game.roadEv.active) {
