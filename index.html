@@ -434,14 +434,6 @@
             <button class="btn" style="background:#444" id="res-menu">MENU</button>
         </div>
 
-        <!-- ROAD SIGNAL OVERLAY -->
-        <div id="road-signal" class="hide" style="position:absolute; top:25%; left:50%; transform:translateX(-50%); text-align:center; padding:15px; background:rgba(0,0,0,0.85); border-radius:15px; border:2px solid #555; z-index:20; width:100px;">
-            <div id="rs-red" style="width:30px; height:30px; border-radius:50%; background:#200; margin:5px auto; border: 1px solid #444;"></div>
-            <div id="rs-yellow" style="width:30px; height:30px; border-radius:50%; background:#220; margin:5px auto; border: 1px solid #444;"></div>
-            <div id="rs-green" style="width:30px; height:30px; border-radius:50%; background:#020; margin:5px auto; border: 1px solid #444;"></div>
-            <p id="rs-msg" style="font-weight:900; margin-top:8px; font-size:0.7rem; color:white; font-family:'Outfit';"></p>
-        </div>
-
         <!-- PAUSE -->
         <div id="scr-pause" class="screen hide" style="background:rgba(0,0,0,0.6)">
             <h1 style="color:var(--safety-cyan); font-size:3rem;">PAUSADO</h1>
@@ -485,7 +477,7 @@
             nColor: localStorage.getItem('otr_314_nc') || '#00a8ff',
             hp: 100, d: 0, v: 0, act: false, started: false, px: 300, offset: 0, obs: [], qClock: 0, lt: 0, paused: false,
             nitro: 100, isNitro: false, nCD: 0, goal: 20000,
-            roadEv: { active: false, color: '', clock: 0, next: 8, duration: 6, y: -1000, triggered: false }
+            roadEv: { active: false, color: '', clock: 0, next: 10, duration: 6, y: -2000, triggered: false, objDelay: 0 }
         };
 
         const keys = {}; window.onkeydown = e => keys[e.key] = true; window.onkeyup = e => keys[e.key] = false;
@@ -640,6 +632,7 @@
                     document.getElementById('t-green').style.background = '#0f0';
                     document.getElementById('t-green').style.boxShadow = '0 0 15px #0f0';
                     game.m += 150; 
+                    game.hp = Math.min(100, game.hp + 20); // GANHA DURABILIDADE
                 } else { 
                     card.style.background = "#e74c3c"; 
                     document.getElementById('t-red').style.background = '#f00';
@@ -651,7 +644,7 @@
                 
                 setTimeout(() => { 
                     scr.classList.add('hide'); 
-                    game.act = true; 
+                    // game.act = true; 
                     game.qClock = 0; 
                     game.lt = performance.now();
                 }, 1000);
@@ -689,8 +682,7 @@
             const c = CARS[game.sel];
             game.hp = 100; game.d = 0; game.v = 0; game.px = 300; game.qClock = 0; game.started = false; game.obs = []; game.nitro = 100; game.nCD = 0;
             game.goal = c.g || 20000;
-            game.roadEv = { active: false, color: '', clock: 0, next: 8, duration: 4 };
-            document.getElementById('road-signal').classList.add('hide');
+            game.roadEv = { active: false, color: '', clock: 0, next: 8, duration: 6, y: -2000, objDelay: 0 };
             nextObsY = -800;
             for (let i = 0; i < 12; i++) {
                 game.obs.push({ x: 180 + Math.random() * 240, y: nextObsY, c: '#444', t: 'sedan', sp: 1.5 });
@@ -719,54 +711,33 @@
                 if (game.started) {
                     game.qClock += dt; 
                     
-                    // LÓGICA DO FAROL DE RUA (FÍSICO E HUD)
+                    // LÓGICA DO FAROL DE RUA (3s DE ANTECIPAÇÃO)
                     game.roadEv.clock += dt;
                     if (!game.roadEv.active && game.roadEv.clock >= game.roadEv.next) {
                         game.roadEv.active = true;
                         game.roadEv.clock = 0;
-                        game.roadEv.y = -2500; // Começa MUITO longe para aviso prévio
+                        game.roadEv.y = -2000; 
+                        game.roadEv.objDelay = 3.0; // 3 SEG DE ESPERA PARA O FAROL FÍSICO
                         game.roadEv.triggered = false; 
                         const rnd = Math.random();
                         game.roadEv.color = rnd < 0.6 ? 'red' : (rnd < 0.8 ? 'yellow' : 'green');
                         
-                        // SE FOR RED, LANÇA A PERGUNTA IMEDIATAMENTE ANTES DE CHEGAR
-                        if(game.roadEv.color === 'red') popQuiz();
-
-                        const rs = document.getElementById('road-signal');
-                        const msg = document.getElementById('rs-msg');
-                        rs.classList.remove('hide');
-                        // HUD RESET
-                        document.getElementById('rs-red').style.background = '#200';
-                        document.getElementById('rs-yellow').style.background = '#220';
-                        document.getElementById('rs-green').style.background = '#020';
-                        document.getElementById('rs-red').style.boxShadow = 'none';
-                        document.getElementById('rs-yellow').style.boxShadow = 'none';
-                        document.getElementById('rs-green').style.boxShadow = 'none';
-
-                        if (game.roadEv.color === 'red') {
-                            document.getElementById('rs-red').style.background = '#f00';
-                            document.getElementById('rs-red').style.boxShadow = '0 0 10px #f00';
-                            msg.innerText = "PARE!";
-                        } else if (game.roadEv.color === 'yellow') {
-                            document.getElementById('rs-yellow').style.background = '#ff0';
-                            document.getElementById('rs-yellow').style.boxShadow = '0 0 10px #ff0';
-                            msg.innerText = "CUIDADO!";
-                        } else {
-                            document.getElementById('rs-green').style.background = '#0f0';
-                            document.getElementById('rs-green').style.boxShadow = '0 0 10px #0f0';
-                            msg.innerText = "PASSAR!";
-                        }
+                        // LANÇA A PERGUNTA NO VERMELHO OU AMARELO
+                        if(game.roadEv.color === 'red' || game.roadEv.color === 'yellow') popQuiz();
                     }
 
                     if (game.roadEv.active) {
-                        game.roadEv.y += game.v; 
+                        if (game.roadEv.objDelay > 0) {
+                            game.roadEv.objDelay -= dt;
+                        } else {
+                            game.roadEv.y += game.v; 
+                        }
                         
                         if (game.roadEv.clock >= game.roadEv.duration || game.roadEv.y > canvas.height + 600) {
                             game.roadEv.active = false;
                             game.roadEv.clock = 0;
-                            document.getElementById('road-signal').classList.add('hide');
                         } else if (game.roadEv.color === 'red' && game.v > 3 && game.roadEv.y > 200 && game.roadEv.y < 800) {
-                            game.hp -= 0.8; // Punição por não parar no farol vermelho
+                            game.hp -= 1.0; // Punição se furar o farol vermelho
                         }
                     }
                     
@@ -795,7 +766,7 @@
             ctx.setLineDash([40, 40]); ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.beginPath(); ctx.moveTo(300, -100 + game.offset); ctx.lineTo(300, canvas.height + 100 + game.offset); ctx.stroke();
 
             game.obs.forEach(o => drawV(ctx, o.x, o.y, o.c, o.t));
-            if (game.roadEv.active) drawPost(ctx, game.roadEv.y, game.roadEv.color);
+            if (game.roadEv.active && game.roadEv.objDelay <= 0) drawPost(ctx, game.roadEv.y, game.roadEv.color);
             drawV(ctx, game.px, canvas.height - 180, CARS[game.sel].c, CARS[game.sel].t);
             requestAnimationFrame(loop);
         }
