@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Own the Road v3.14 | BALANCED UPDATE</title>
+    <title>Own the Road v3.15 | VOLUME CONTROL</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@900&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -26,14 +26,18 @@
 
         /* HUD */
         .hud { position:absolute; top:20px; left:20px; right:20px; z-index:10; pointer-events:none; display:flex; flex-direction:column; gap:8px; }
-        .stat-badge { background:rgba(0,0,0,0.8); padding:10px 15px; border-radius:8px; border-left:4px solid var(--safety-cyan); width:fit-content; }
+        .stat-badge { background:rgba(0,0,0,0.85); padding:10px 15px; border-radius:8px; border-left:4px solid var(--safety-cyan); width:fit-content; border: 1px solid rgba(255,255,255,0.1); }
         .bar-cont { width:100px; height:8px; background:#333; border-radius:4px; overflow:hidden; margin-top:5px; }
         #hp-bar { width:100%; height:100%; background:#0f0; transition:0.3s; }
         #nitro-bar { width:100%; height:100%; background:var(--nitro-blue); transition: 0.1s linear; }
 
-        .ctrl-hud { position:absolute; top:20px; right:20px; z-index:50; display:flex; gap:10px; }
+        .ctrl-hud { position:absolute; top:20px; right:20px; z-index:50; display:flex; align-items:center; gap:10px; }
         .btn-icon { background:rgba(0,0,0,0.8); color:white; border:1px solid #555; width:44px; height:44px; border-radius:50%; cursor:pointer; font-size:1.1rem; display:flex; align-items:center; justify-content:center; }
         
+        /* Volume Slider */
+        #vol-cont { background:rgba(0,0,0,0.8); padding:5px 12px; border-radius:20px; border:1px solid #555; display:flex; align-items:center; gap:8px; height:44px; }
+        #vol-slider { width:80px; height:4px; cursor:pointer; accent-color: var(--safety-cyan); }
+
         #speedo {
             position:absolute; bottom:25px; left:20px; width:100px; height:100px;
             background:rgba(0,0,0,0.8); border-radius:50%; border:2px solid #555;
@@ -49,12 +53,8 @@
             background:rgba(0,0,0,0.97); z-index:100; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:30px;
         }
         .hide { display:none !important; }
-        .btn { background:var(--f1-red); color:white; border:none; padding:12px 25px; font-weight:900; font-size:1rem; cursor:pointer; border-radius:5px; margin:8px; }
-        .btn:hover { background: #ff0000; }
-
-        /* TUTORIAL (CLASSIC DESIGN) */
-        .tut-box { text-align: left; background: #000; padding: 20px; border-radius: 10px; border: 1px solid #444; margin: 20px 0; max-width: 90%; font-size: 0.85rem; line-height: 1.6; }
-        .tut-box b { color: var(--safety-cyan); }
+        .btn { background:var(--f1-red); color:white; border:none; padding:12px 25px; font-weight:900; font-size:1rem; cursor:pointer; border-radius:5px; margin:8px; transition: transform 0.2s; }
+        .btn:hover { background: #ff0000; transform: scale(1.05); }
 
         #music-frame { position: absolute; top: -100px; left: -100px; width: 1px; height: 1px; visibility: hidden; pointer-events: none; }
 
@@ -75,8 +75,11 @@
     </div>
 
     <div class="ctrl-hud">
+        <div id="vol-cont">
+            <span>🔊</span>
+            <input type="range" id="vol-slider" min="0" max="100" value="50">
+        </div>
         <button id="switch-music" class="btn-icon">🎵</button>
-        <button id="mute-icon" class="btn-icon">🔊</button>
         <button id="pause-icon" class="btn-icon">⏸️</button>
     </div>
 
@@ -91,10 +94,10 @@
         <button class="btn" style="background:#444" id="garage-btn">GARAGEM</button>
     </div>
 
-    <!-- TUTORIAL (REVERTED DESIGN) -->
+    <!-- TUTORIAL -->
     <div id="scr-tut" class="screen hide">
         <h1 style="color:var(--safety-cyan)">TUTORIAL</h1>
-        <div class="tut-box">
+        <div style="text-align: left; background: #000; padding: 20px; border-radius: 10px; border: 1px solid #444; margin: 20px 0; max-width: 90%; font-size: 0.85rem; line-height: 1.6;">
             • <b>W / ⬆️</b>: Acelerar (Ativa cronômetros)<br>
             • <b>S / ⬇️</b>: Freio / Marcha Ré<br>
             • <b>A - D / ⬅️ - ➡️</b>: Direção Lateral<br>
@@ -143,10 +146,18 @@
     const ctx = canvas.getContext('2d');
 
     const PLAYLIST = [{ id: 'pAgnJDJN4VA' }, { id: 'egMWlD3fLJ8' }];
-    let cTrack = 0; let player; let isMuted = false;
+    let cTrack = 0; let player;
 
     const tag = document.createElement('script'); tag.src = "https://www.youtube.com/iframe_api"; document.body.appendChild(tag);
-    function onYouTubeIframeAPIReady() { player = new YT.Player('music-frame', { height: '1', width: '1', videoId: PLAYLIST[cTrack].id, playerVars: { 'autoplay': 0, 'loop': 1, 'playlist': PLAYLIST[cTrack].id } }); }
+    function onYouTubeIframeAPIReady() { 
+        player = new YT.Player('music-frame', { 
+            height: '1', width: '1', videoId: PLAYLIST[cTrack].id, 
+            playerVars: { 'autoplay': 0, 'loop': 1, 'playlist': PLAYLIST[cTrack].id },
+            events: {
+                'onReady': (e) => e.target.setVolume(50)
+            }
+        }); 
+    }
 
     const CARS = [
         { id: 0, n: "Hatch Pop", p: 0, s: 7, a: 0.12, c: "#999", t: 'hatch' },
@@ -163,16 +174,16 @@
     ];
 
     let game = {
-        m: parseInt(localStorage.getItem('otr_314_m')) || 0,
-        o: JSON.parse(localStorage.getItem('otr_314_o')) || [0],
-        sel: parseInt(localStorage.getItem('otr_314_s')) || 0,
+        m: parseInt(localStorage.getItem('otr_315_m')) || 0,
+        o: JSON.parse(localStorage.getItem('otr_315_o')) || [0],
+        sel: parseInt(localStorage.getItem('otr_315_s')) || 0,
         hp: 100, d: 0, v: 0, act: false, started: false, px: 300, offset: 0, obs: [], qClock: 0, lt: 0, paused: false,
         nitro: 100, isNitro: false, nCD: 0, goal: 20000
     };
 
     const keys = {}; window.onkeydown = e => keys[e.key] = true; window.onkeyup = e => keys[e.key] = false;
 
-    function save() { localStorage.setItem('otr_314_m', game.m); localStorage.setItem('otr_314_o', JSON.stringify(game.o)); localStorage.setItem('otr_314_s', game.sel); }
+    function save() { localStorage.setItem('otr_315_m', game.m); localStorage.setItem('otr_315_o', JSON.stringify(game.o)); localStorage.setItem('otr_315_s', game.sel); }
     function syncHUD() { 
         document.getElementById('m-val').innerText = '$' + game.m;
         document.getElementById('hp-bar').style.width = game.hp + '%';
@@ -260,7 +271,9 @@
         requestAnimationFrame(loop);
     }
 
-    // UI BUTTONS
+    // UI LOGIC
+    document.getElementById('vol-slider').oninput = (e) => { if(player) player.setVolume(e.target.value); };
+
     document.getElementById('start-btn').onclick = () => { if(player) player.playVideo(); document.getElementById('scr-menu').classList.add('hide'); init(); game.act = true; game.lt = performance.now(); };
     document.getElementById('tut-btn').onclick = () => document.getElementById('scr-tut').classList.remove('hide');
     document.getElementById('exit-tut').onclick = () => document.getElementById('scr-tut').classList.add('hide');
@@ -276,14 +289,13 @@
         document.getElementById('scr-garage').classList.remove('hide');
     };
     document.getElementById('exit-garage').onclick = () => document.getElementById('scr-garage').classList.add('hide');
-    document.getElementById('mute-icon').onclick = () => { isMuted = !isMuted; if(player) isMuted ? player.mute() : player.unMute(); document.getElementById('mute-icon').innerText = isMuted?"🔇":"🔊"; };
     document.getElementById('pause-icon').onclick = () => { game.paused = true; document.getElementById('scr-pause').classList.remove('hide'); };
     document.getElementById('resume-btn').onclick = () => { game.paused = false; document.getElementById('scr-pause').classList.add('hide'); };
     document.getElementById('restart-btn').onclick = () => { game.paused = false; document.getElementById('scr-pause').classList.add('hide'); init(); };
     document.getElementById('back-menu').onclick = () => { game.paused = false; document.getElementById('scr-pause').classList.add('hide'); document.getElementById('scr-menu').classList.remove('hide'); };
     document.getElementById('res-menu').onclick = () => { document.getElementById('scr-res').classList.add('hide'); document.getElementById('scr-menu').classList.remove('hide'); };
     document.getElementById('retry-btn').onclick = () => { document.getElementById('scr-res').classList.add('hide'); init(); game.act = true; game.lt = performance.now(); };
-    document.getElementById('switch-music').onclick = () => { cTrack = (cTrack + 1) % PLAYLIST.length; player.loadVideoById(PLAYLIST[cTrack].id); };
+    document.getElementById('switch-music').onclick = () => { cTrack = (cTrack + 1) % PLAYLIST.length; player.loadVideoById(PLAYLIST[cTrack].id); player.setVolume(document.getElementById('vol-slider').value); };
 
     function boot() { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; syncHUD(); loop(performance.now()); }
     window.onresize = boot; boot();
