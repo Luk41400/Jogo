@@ -100,6 +100,7 @@
             top: 20px;
             right: 20px;
             z-index: 1000;
+            /* Ensure it's above everything including screens */
             display: flex;
             gap: 10px;
         }
@@ -117,6 +118,78 @@
             align-items: center;
             justify-content: center;
             transition: 0.2s;
+        }
+
+        /* VOLUME SLIDER SYSTEM */
+        .vol-wrapper {
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #444;
+            height: 44px;
+            width: 44px;
+            /* Start as circle */
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            cursor: pointer;
+        }
+
+        .vol-wrapper.active {
+            width: 160px;
+            /* Expand to show slider */
+            padding-right: 15px;
+            border-color: var(--safety-cyan);
+            cursor: default;
+            /* Don't show pointer for the whole container when open */
+        }
+
+        .vol-icon {
+            min-width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            z-index: 2;
+        }
+
+        .vol-slider {
+            flex: 1;
+            height: 4px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #333;
+            border-radius: 2px;
+            outline: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            cursor: pointer;
+        }
+
+        .vol-wrapper.active .vol-slider {
+            opacity: 1;
+        }
+
+        .vol-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--safety-cyan);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--safety-cyan);
+        }
+
+        .vol-slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: var(--safety-cyan);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--safety-cyan);
+            border: none;
         }
 
         #speedo {
@@ -197,6 +270,7 @@
             background: #ff0000;
         }
 
+        /* TUTORIAL (CLASSIC DESIGN) */
         .tut-box {
             text-align: left;
             background: #000;
@@ -213,16 +287,43 @@
             color: var(--safety-cyan);
         }
 
+        #track-map {
+            position: absolute;
+            top: 180px;
+            right: 20px;
+            width: 10px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+
         @keyframes fadeOut {
-            0% { opacity: 0; transform: translate(-50%, 20px); }
-            10% { opacity: 1; transform: translate(-50%, 0); }
-            80% { opacity: 1; transform: translate(-50%, 0); }
-            100% { opacity: 0; transform: translate(-50%, -20px); }
+            0% {
+                opacity: 0;
+                transform: translate(-50%, 20px);
+            }
+
+            10% {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+
+            80% {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -20px);
+            }
         }
     </style>
 </head>
 
 <body>
+
+    <audio id="game-audio" loop></audio>
 
     <div id="game-area">
         <canvas id="gameCanvas"></canvas>
@@ -241,6 +342,11 @@
         </div>
 
         <div class="ctrl-hud">
+            <button id="switch-music" class="btn-icon">🎵</button>
+            <div id="vol-ctrl" class="vol-wrapper">
+                <div id="mute-icon" class="vol-icon">🔊</div>
+                <input type="range" id="vol-slider" class="vol-slider" min="0" max="100" value="100">
+            </div>
             <button id="pause-icon" class="btn-icon">⏸️</button>
         </div>
 
@@ -261,7 +367,7 @@
             <button class="btn" style="background:#444" id="garage-btn">GARAGEM</button>
         </div>
 
-        <!-- TUTORIAL -->
+        <!-- TUTORIAL (REVERTED DESIGN) -->
         <div id="scr-tut" class="screen hide">
             <h1 style="color:var(--safety-cyan)">TUTORIAL</h1>
             <div class="tut-box">
@@ -313,6 +419,13 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
+        const audio = document.getElementById('game-audio');
+        const PLAYLIST = [
+            { src: 'https://cdn.pixabay.com/audio/2024/02/09/audio_277ee3865c.mp3' },
+            { src: 'https://cdn.pixabay.com/audio/2024/01/21/audio_65008544d3.mp3' }
+        ];
+        let cTrack = 0;
+
         const CARS = [
             { id: 0, n: "Hatch Pop", p: 0, s: 7, a: 0.12, c: "#999", t: 'hatch' },
             { id: 1, n: "Sedan Premium", p: 500, s: 10, a: 0.2, c: "#33c", t: 'sedan' },
@@ -324,28 +437,27 @@
         const QUIZ_LIST = [
             { q: "Qual a distância segura do ciclista?", a: "1,5 metro", o: ["0,5m", "Perto", "10m"] },
             { q: "Sinal Amarelo significa:", a: "Parar se puder", o: ["Acelerar", "Buzinar", "Passar rápido"] },
-            { q: "Álcool e Direção?", a: "Jamais!", o: ["1 Taça", "Sempre OK", "Só feriado"] },
-            { q: "Qual o uso correto do pisca-alerta?", a: "Emergência ou parada", o: ["Indicar conversão", "Andar rápido", "Embaixo de chuva"] },
-            { q: "Farol baixo durante o dia em rodovias?", a: "Obrigatório", o: ["Opcional", "Proibido", "Só se houver neblina"] },
-            { q: "Prioridade no cruzamento sem sinalização?", a: "Quem vem da direita", o: ["O veículo maior", "Quem buzinar primeiro", "O mais veloz"] },
-            { q: "Documento obrigatório do condutor?", a: "CNH e CRLV", o: ["RG apenas", "CPF", "Comprovante de residência"] }
+            { q: "Álcool e Direção?", a: "Jamais!", o: ["1 Taça", "Sempre OK", "Só feriado"] }
         ];
 
         let game = {
             m: parseInt(localStorage.getItem('otr_314_m')) || 0,
             o: JSON.parse(localStorage.getItem('otr_314_o')) || [0],
             sel: parseInt(localStorage.getItem('otr_314_s')) || 0,
+            vol: parseInt(localStorage.getItem('otr_314_vol')) ?? 100,
+            muted: localStorage.getItem('otr_314_muted') === 'true',
             hp: 100, d: 0, v: 0, act: false, started: false, px: 300, offset: 0, obs: [], qClock: 0, lt: 0, paused: false,
-            nitro: 100, isNitro: false, nCD: 0, goal: 20000,
-            qPool: []
+            nitro: 100, isNitro: false, nCD: 0, goal: 20000
         };
 
         const keys = {}; window.onkeydown = e => keys[e.key] = true; window.onkeyup = e => keys[e.key] = false;
 
-        function save() { 
-            localStorage.setItem('otr_314_m', game.m); 
-            localStorage.setItem('otr_314_o', JSON.stringify(game.o)); 
+        function save() {
+            localStorage.setItem('otr_314_m', game.m);
+            localStorage.setItem('otr_314_o', JSON.stringify(game.o));
             localStorage.setItem('otr_314_s', game.sel);
+            localStorage.setItem('otr_314_vol', game.vol);
+            localStorage.setItem('otr_314_muted', game.muted);
             showSaveMsg();
         }
         function showSaveMsg() {
@@ -380,27 +492,20 @@
 
         let qInterval;
         function popQuiz() {
-            game.act = false;
-
-            // Sistema para não repetir perguntas
-            if (game.qPool.length === 0) {
-                game.qPool = QUIZ_LIST.map((_, i) => i).sort(() => Math.random() - 0.5);
-            }
-            const qIdx = game.qPool.pop();
-            const q = QUIZ_LIST[qIdx];
+            game.act = false; const q = QUIZ_LIST[Math.floor(Math.random() * QUIZ_LIST.length)];
             const scr = document.getElementById('scr-quiz');
             const card = scr.querySelector('div'); const timerTxt = scr.querySelector('#q-timer'); const qBox = scr.querySelector('#q-box');
             document.getElementById('q-txt').innerText = q.q; qBox.innerHTML = ''; card.style.background = "#111";
+            qBox.style.pointerEvents = 'auto';
 
             let tl = 10; timerTxt.innerText = tl;
+            let answered = false;
             const endQ = (isC) => {
+                if (answered) return;
+                answered = true;
+                qBox.style.pointerEvents = 'none';
                 clearInterval(qInterval);
-                if (isC) { 
-                    card.style.background = "#2ecc71"; 
-                    game.m += 150; 
-                    game.hp = Math.min(100, game.hp + 10);
-                    save(); 
-                }
+                if (isC) { card.style.background = "#2ecc71"; game.m += 150; save(); }
                 else { card.style.background = "#e74c3c"; game.hp = Math.max(0, game.hp - 30); }
                 setTimeout(() => { scr.classList.add('hide'); game.act = true; game.qClock = 0; }, 1000);
             };
@@ -414,7 +519,6 @@
 
         function init() {
             game.hp = 100; game.d = 0; game.v = 0; game.px = 300; game.qClock = 0; game.started = false; game.obs = []; game.nitro = 100; game.nCD = 0;
-            game.qPool = []; // Reinicia o pool de perguntas a cada nova corrida
             for (let i = 0; i < 15; i++) game.obs.push({ x: 180 + Math.random() * 240, y: -(i * 1600) - 2000, c: '#444', t: 'sedan', sp: 1.5 });
         }
 
@@ -456,9 +560,11 @@
         }
 
         // UI BUTTONS
-        document.getElementById('start-btn').onclick = () => { 
-            document.getElementById('scr-menu').classList.add('hide'); 
-            init(); game.act = true; game.lt = performance.now(); 
+        document.getElementById('start-btn').onclick = () => {
+            audio.src = PLAYLIST[cTrack].src;
+            audio.play().catch(e => console.log("User must interact first"));
+            document.getElementById('scr-menu').classList.add('hide');
+            init(); game.act = true; game.lt = performance.now();
         };
         document.getElementById('tut-btn').onclick = () => document.getElementById('scr-tut').classList.remove('hide');
         document.getElementById('exit-tut').onclick = () => document.getElementById('scr-tut').classList.add('hide');
@@ -475,18 +581,74 @@
         };
         document.getElementById('exit-garage').onclick = () => document.getElementById('scr-garage').classList.add('hide');
 
+        const volCtrl = document.getElementById('vol-ctrl');
+        const volSlider = document.getElementById('vol-slider');
+        const muteIcon = document.getElementById('mute-icon');
+
+        function updateAudio() {
+            audio.volume = game.vol / 100;
+            audio.muted = game.muted || game.vol === 0;
+            muteIcon.innerText = audio.muted ? "🔇" : "🔊";
+            volSlider.value = game.vol;
+        }
+
+        muteIcon.onclick = (e) => {
+            e.stopPropagation();
+            if (volCtrl.classList.contains('active')) {
+                game.muted = !game.muted;
+                updateAudio();
+                save();
+            } else {
+                volCtrl.classList.add('active');
+            }
+        };
+
+        // Also allow clicking the wrapper when it's closed to open it
+        volCtrl.onclick = (e) => {
+            if (!volCtrl.classList.contains('active')) {
+                volCtrl.classList.add('active');
+                e.stopPropagation();
+            }
+        };
+
+        volSlider.oninput = (e) => {
+            game.vol = parseInt(e.target.value);
+            game.muted = game.vol === 0;
+            updateAudio();
+        };
+
+        volSlider.onchange = () => save();
+
+        // Close slider when clicking outside or pressing ESC
+        window.addEventListener('click', (e) => {
+            if (!volCtrl.contains(e.target) && volCtrl.classList.contains('active')) {
+                volCtrl.classList.remove('active');
+            }
+        });
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && volCtrl.classList.contains('active')) {
+                volCtrl.classList.remove('active');
+            }
+        });
         document.getElementById('pause-icon').onclick = () => { game.paused = true; document.getElementById('scr-pause').classList.remove('hide'); };
         document.getElementById('resume-btn').onclick = () => { game.paused = false; document.getElementById('scr-pause').classList.add('hide'); };
         document.getElementById('restart-btn').onclick = () => { game.paused = false; document.getElementById('scr-pause').classList.add('hide'); init(); };
         document.getElementById('back-menu').onclick = () => { game.paused = false; document.getElementById('scr-pause').classList.add('hide'); document.getElementById('scr-menu').classList.remove('hide'); };
         document.getElementById('res-menu').onclick = () => { document.getElementById('scr-res').classList.add('hide'); document.getElementById('scr-menu').classList.remove('hide'); };
         document.getElementById('retry-btn').onclick = () => { document.getElementById('scr-res').classList.add('hide'); init(); game.act = true; game.lt = performance.now(); };
+        document.getElementById('switch-music').onclick = () => {
+            cTrack = (cTrack + 1) % PLAYLIST.length;
+            audio.src = PLAYLIST[cTrack].src;
+            audio.play();
+        };
 
-        function boot() { 
-            canvas.width = canvas.offsetWidth; 
-            canvas.height = canvas.offsetHeight; 
-            syncHUD(); 
-            loop(performance.now()); 
+        function boot() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            syncHUD();
+            updateAudio();
+            loop(performance.now());
         }
         window.onresize = boot; boot();
 
