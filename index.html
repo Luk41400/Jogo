@@ -798,11 +798,6 @@
         document.getElementById('back-menu').onclick = () => { game.paused = false; document.getElementById('scr-pause').classList.add('hide'); document.getElementById('scr-menu').classList.remove('hide'); };
         document.getElementById('res-menu').onclick = () => { document.getElementById('scr-res').classList.add('hide'); document.getElementById('scr-menu').classList.remove('hide'); };
         document.getElementById('retry-btn').onclick = () => { document.getElementById('scr-res').classList.add('hide'); init(); game.act = true; game.lt = performance.now(); };
-        document.getElementById('switch-music').onclick = () => {
-            cTrack = (cTrack + 1) % PLAYLIST.length;
-            audio.src = PLAYLIST[cTrack].src;
-            audio.play();
-        };
 
         function boot() {
             canvas.width = canvas.offsetWidth;
