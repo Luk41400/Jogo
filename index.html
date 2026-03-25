@@ -241,13 +241,18 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.97);
+            background: rgba(0, 0, 0, 0.9);
             z-index: 100;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 30px;
+            backdrop-filter: blur(4px);
+        }
+
+        #scr-quiz {
+            background: rgba(0, 0, 0, 0.75);
         }
 
         .hide {
@@ -564,20 +569,29 @@
 
         function drawPost(ctx, y, color) {
             ctx.save(); ctx.translate(300, y);
-            // Estrutura Superior (Overhead Gantry)
-            ctx.fillStyle = '#222'; ctx.fillRect(-170, -110, 340, 15); // Viga superior
-            ctx.fillStyle = '#333'; ctx.fillRect(-175, -110, 15, 200); ctx.fillRect(160, -110, 15, 200); // Postes laterais
-            // Caixa do farol centralizada na viga
-            ctx.fillStyle = '#111'; ctx.beginPath(); ctx.roundRect(-20, -145, 40, 90, 5); ctx.fill();
-            // Luzes maiores e brilhantes
-            ctx.fillStyle = color === 'red' ? '#f00' : '#300'; ctx.beginPath(); ctx.arc(0, -130, 8, 0, Math.PI*2); ctx.fill();
-            if(color === 'red') { ctx.shadowBlur = 15; ctx.shadowColor = '#f00'; ctx.beginPath(); ctx.arc(0, -130, 8, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur = 0; }
+            // Estrutura Superior COLOSSAL
+            ctx.fillStyle = '#000'; ctx.fillRect(-250, -220, 500, 35); // Viga superior reforçada
+            ctx.fillStyle = '#111'; ctx.fillRect(-270, -220, 50, 600); ctx.fillRect(220, -220, 50, 600); // Postes laterais gigantes
             
-            ctx.fillStyle = color === 'yellow' ? '#ff0' : '#330'; ctx.beginPath(); ctx.arc(0, -110, 8, 0, Math.PI*2); ctx.fill();
-            if(color === 'yellow') { ctx.shadowBlur = 15; ctx.shadowColor = '#ff0'; ctx.beginPath(); ctx.arc(0, -110, 8, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur = 0; }
+            // Caixa do farol GIGANTE com detalhes
+            ctx.fillStyle = '#050505'; ctx.beginPath(); ctx.roundRect(-60, -280, 120, 240, 15); ctx.fill();
+            ctx.strokeStyle = '#333'; ctx.lineWidth = 6; ctx.stroke();
             
-            ctx.fillStyle = color === 'green' ? '#0f0' : '#030'; ctx.beginPath(); ctx.arc(0, -90, 8, 0, Math.PI*2); ctx.fill();
-            if(color === 'green') { ctx.shadowBlur = 15; ctx.shadowColor = '#0f0'; ctx.beginPath(); ctx.arc(0, -90, 8, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur = 0; }
+            // Luzes ENORMES com efeitos de brilho (Holográficas)
+            const sz = 30;
+            const drawLight = (ly, lc, lcolor, isLit) => {
+                ctx.fillStyle = isLit ? lcolor : "#111";
+                ctx.beginPath(); ctx.arc(0, ly, sz, 0, Math.PI*2); ctx.fill();
+                if(isLit) {
+                    ctx.shadowBlur = 50; ctx.shadowColor = lcolor;
+                    ctx.beginPath(); ctx.arc(0, ly, sz, 0, Math.PI*2); ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+            };
+
+            drawLight(-230, 'red', '#ff1a1a', color === 'red');
+            drawLight(-160, 'yellow', '#ffff00', color === 'yellow');
+            drawLight(-90, 'green', '#00ff00', color === 'green');
             ctx.restore();
         }
 
@@ -669,7 +683,7 @@
                 qBox.appendChild(b);
             });
             scr.classList.remove('hide');
-        }
+    }
 
         function init() {
             const c = CARS[game.sel];
@@ -710,10 +724,14 @@
                     if (!game.roadEv.active && game.roadEv.clock >= game.roadEv.next) {
                         game.roadEv.active = true;
                         game.roadEv.clock = 0;
-                        game.roadEv.y = -300;
+                        game.roadEv.y = -2500; // Começa MUITO longe para aviso prévio
                         game.roadEv.triggered = false; 
                         const rnd = Math.random();
-                        game.roadEv.color = rnd < 0.45 ? 'red' : (rnd < 0.7 ? 'yellow' : 'green');
+                        game.roadEv.color = rnd < 0.6 ? 'red' : (rnd < 0.8 ? 'yellow' : 'green');
+                        
+                        // SE FOR RED, LANÇA A PERGUNTA IMEDIATAMENTE ANTES DE CHEGAR
+                        if(game.roadEv.color === 'red') popQuiz();
+
                         const rs = document.getElementById('road-signal');
                         const msg = document.getElementById('rs-msg');
                         rs.classList.remove('hide');
@@ -743,25 +761,12 @@
                     if (game.roadEv.active) {
                         game.roadEv.y += game.v; 
                         
-                        // Detecção de gatilho do Quiz ao parar no Vermelho
-                        if (game.roadEv.color === 'red' && game.v < 0.5 && !game.roadEv.triggered && game.roadEv.y > 0 && game.roadEv.y < canvas.height - 200) {
-                            game.roadEv.triggered = true;
-                            // Dá um pequeno delay para o jogador ver que parou
-                            setTimeout(() => {
-                                if (game.roadEv.active) {
-                                    game.roadEv.active = false;
-                                    document.getElementById('road-signal').classList.add('hide');
-                                    popQuiz();
-                                }
-                            }, 500);
-                        }
-
-                        if (game.roadEv.clock >= game.roadEv.duration || game.roadEv.y > canvas.height + 400) {
+                        if (game.roadEv.clock >= game.roadEv.duration || game.roadEv.y > canvas.height + 600) {
                             game.roadEv.active = false;
                             game.roadEv.clock = 0;
                             document.getElementById('road-signal').classList.add('hide');
-                        } else if (game.roadEv.color === 'red' && game.v > 3 && game.roadEv.y > 200 && game.roadEv.y < 600) {
-                            game.hp -= 0.6; // Dano se passar correndo no farol vermelho
+                        } else if (game.roadEv.color === 'red' && game.v > 3 && game.roadEv.y > 200 && game.roadEv.y < 800) {
+                            game.hp -= 0.8; // Punição por não parar no farol vermelho
                         }
                     }
                     
