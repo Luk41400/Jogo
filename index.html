@@ -509,11 +509,14 @@
             showSaveMsg();
         }
         function showSaveMsg() {
+            showPopup("💾 PROGRESSO SALVO", "var(--safety-cyan)");
+        }
+        function showPopup(txt, color) {
             const msg = document.createElement('div');
-            msg.innerText = "💾 PROGRESSO SALVO";
-            msg.style = "position:absolute; bottom:20px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.8); color:var(--safety-cyan); padding:10px 20px; border-radius:30px; border:1px solid var(--safety-cyan); font-size:0.8rem; z-index:2000; animation: fadeOut 2s forwards;";
+            msg.innerText = txt;
+            msg.style = `position:absolute; top:120px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.85); color:${color}; padding:15px 30px; border-radius:10px; border:2px solid ${color}; font-size:1.2rem; font-weight:900; z-index:2000; animation: fadeOut 2.5s forwards; font-family:'Outfit'; text-shadow: 0 0 10px ${color};`;
             document.body.appendChild(msg);
-            setTimeout(() => msg.remove(), 2000);
+            setTimeout(() => msg.remove(), 2500);
         }
         function syncHUD() {
             const m = game.m || 0;
@@ -739,6 +742,8 @@
                         const rnd = Math.random();
                         game.roadEv.color = rnd < 0.6 ? 'red' : (rnd < 0.8 ? 'yellow' : 'green');
                         
+                        showPopup("🚦 FAROL À FRENTE!!", "white");
+
                         // LANÇA A PERGUNTA NO VERMELHO OU AMARELO SINCRONIZADA
                         if(game.roadEv.color === 'red' || game.roadEv.color === 'yellow') popQuiz(game.roadEv.color);
                     }
