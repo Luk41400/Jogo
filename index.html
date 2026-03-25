@@ -99,7 +99,7 @@
             position: absolute;
             top: 20px;
             right: 20px;
-            z-index: 1000; /* Ensure it's above everything including screens */
+            z-index: 1000;
             display: flex;
             gap: 10px;
         }
@@ -117,75 +117,6 @@
             align-items: center;
             justify-content: center;
             transition: 0.2s;
-        }
-
-        /* VOLUME SLIDER SYSTEM */
-        .vol-wrapper {
-            background: rgba(0, 0, 0, 0.9);
-            border: 1px solid #444;
-            height: 44px;
-            width: 44px; /* Start as circle */
-            border-radius: 22px;
-            display: flex;
-            align-items: center;
-            overflow: hidden;
-            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            cursor: pointer;
-        }
-
-        .vol-wrapper.active {
-            width: 160px; /* Expand to show slider */
-            padding-right: 15px;
-            border-color: var(--safety-cyan);
-            cursor: default; /* Don't show pointer for the whole container when open */
-        }
-
-        .vol-icon {
-            min-width: 44px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem;
-            z-index: 2;
-        }
-
-        .vol-slider {
-            flex: 1;
-            height: 4px;
-            -webkit-appearance: none;
-            appearance: none;
-            background: #333;
-            border-radius: 2px;
-            outline: none;
-            opacity: 0;
-            transition: opacity 0.3s;
-            cursor: pointer;
-        }
-
-        .vol-wrapper.active .vol-slider {
-            opacity: 1;
-        }
-
-        .vol-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
-            background: var(--safety-cyan);
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 0 10px var(--safety-cyan);
-        }
-
-        .vol-slider::-moz-range-thumb {
-            width: 16px;
-            height: 16px;
-            background: var(--safety-cyan);
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 0 10px var(--safety-cyan);
-            border: none;
         }
 
         #speedo {
@@ -266,7 +197,6 @@
             background: #ff0000;
         }
 
-        /* TUTORIAL (CLASSIC DESIGN) */
         .tut-box {
             text-align: left;
             background: #000;
@@ -283,15 +213,6 @@
             color: var(--safety-cyan);
         }
 
-        #music-frame {
-            position: absolute;
-            top: -100px;
-            left: -100px;
-            width: 1px;
-            height: 1px;
-            visibility: hidden;
-            pointer-events: none;
-        }
         @keyframes fadeOut {
             0% { opacity: 0; transform: translate(-50%, 20px); }
             10% { opacity: 1; transform: translate(-50%, 0); }
@@ -302,8 +223,6 @@
 </head>
 
 <body>
-
-    <div id="music-frame"></div>
 
     <div id="game-area">
         <canvas id="gameCanvas"></canvas>
@@ -322,11 +241,6 @@
         </div>
 
         <div class="ctrl-hud">
-            <button id="switch-music" class="btn-icon">🎵</button>
-            <div id="vol-ctrl" class="vol-wrapper">
-                <div id="mute-icon" class="vol-icon">🔊</div>
-                <input type="range" id="vol-slider" class="vol-slider" min="0" max="100" value="100">
-            </div>
             <button id="pause-icon" class="btn-icon">⏸️</button>
         </div>
 
@@ -347,7 +261,7 @@
             <button class="btn" style="background:#444" id="garage-btn">GARAGEM</button>
         </div>
 
-        <!-- TUTORIAL (REVERTED DESIGN) -->
+        <!-- TUTORIAL -->
         <div id="scr-tut" class="screen hide">
             <h1 style="color:var(--safety-cyan)">TUTORIAL</h1>
             <div class="tut-box">
@@ -399,23 +313,11 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        const PLAYLIST = [{ id: 'pAgnJDJN4VA' }, { id: 'egMWlD3fLJ8' }];
-        let cTrack = 0; let player; let isMuted = false;
-
-        const tag = document.createElement('script'); tag.src = "https://www.youtube.com/iframe_api"; document.body.appendChild(tag);
-        function onYouTubeIframeAPIReady() { 
-            player = new YT.Player('music-frame', { 
-                height: '1', width: '1', videoId: PLAYLIST[cTrack].id, 
-                playerVars: { 'autoplay': 0, 'loop': 1, 'playlist': PLAYLIST[cTrack].id },
-                events: { 'onReady': updateAudio }
-            }); 
-        }
-
         const CARS = [
             { id: 0, n: "Hatch Pop", p: 0, s: 7, a: 0.12, c: "#999", t: 'hatch' },
             { id: 1, n: "Sedan Premium", p: 500, s: 10, a: 0.2, c: "#33c", t: 'sedan' },
             { id: 2, n: "SUV Adventure", p: 1200, s: 13, a: 0.25, c: "#262", t: 'suv' },
-            { id: 3, n: "Esportivo GT", p: 2500, s: 19, a: 0.45, c: "#e1a100", t: 'sport' },
+            { id: 3, n: "Esportivo GT", p: 2500, a: 0.45, c: "#e1a100", t: 'sport' },
             { id: 4, n: "F1 MONOPOSTO", p: 6000, s: 28, a: 0.8, c: "#e10600", t: 'f1' }
         ];
 
@@ -429,8 +331,6 @@
             m: parseInt(localStorage.getItem('otr_314_m')) || 0,
             o: JSON.parse(localStorage.getItem('otr_314_o')) || [0],
             sel: parseInt(localStorage.getItem('otr_314_s')) || 0,
-            vol: parseInt(localStorage.getItem('otr_314_vol')) ?? 100,
-            muted: localStorage.getItem('otr_314_muted') === 'true',
             hp: 100, d: 0, v: 0, act: false, started: false, px: 300, offset: 0, obs: [], qClock: 0, lt: 0, paused: false,
             nitro: 100, isNitro: false, nCD: 0, goal: 20000
         };
@@ -441,8 +341,6 @@
             localStorage.setItem('otr_314_m', game.m); 
             localStorage.setItem('otr_314_o', JSON.stringify(game.o)); 
             localStorage.setItem('otr_314_s', game.sel);
-            localStorage.setItem('otr_314_vol', game.vol);
-            localStorage.setItem('otr_314_muted', game.muted);
             showSaveMsg();
         }
         function showSaveMsg() {
@@ -540,7 +438,10 @@
         }
 
         // UI BUTTONS
-        document.getElementById('start-btn').onclick = () => { if (player) player.playVideo(); document.getElementById('scr-menu').classList.add('hide'); init(); game.act = true; game.lt = performance.now(); };
+        document.getElementById('start-btn').onclick = () => { 
+            document.getElementById('scr-menu').classList.add('hide'); 
+            init(); game.act = true; game.lt = performance.now(); 
+        };
         document.getElementById('tut-btn').onclick = () => document.getElementById('scr-tut').classList.remove('hide');
         document.getElementById('exit-tut').onclick = () => document.getElementById('scr-tut').classList.add('hide');
         document.getElementById('garage-btn').onclick = () => {
@@ -556,75 +457,17 @@
         };
         document.getElementById('exit-garage').onclick = () => document.getElementById('scr-garage').classList.add('hide');
 
-        const volCtrl = document.getElementById('vol-ctrl');
-        const volSlider = document.getElementById('vol-slider');
-        const muteIcon = document.getElementById('mute-icon');
-
-        function updateAudio() {
-            if (!player || typeof player.setVolume !== 'function') return;
-            player.setVolume(game.vol);
-            if (game.muted || game.vol === 0) {
-                player.mute();
-                muteIcon.innerText = "🔇";
-            } else {
-                player.unMute();
-                muteIcon.innerText = "🔊";
-            }
-            volSlider.value = game.vol;
-        }
-
-        muteIcon.onclick = (e) => {
-            e.stopPropagation();
-            if (volCtrl.classList.contains('active')) {
-                game.muted = !game.muted;
-                updateAudio();
-                save();
-            } else {
-                volCtrl.classList.add('active');
-            }
-        };
-
-        // Also allow clicking the wrapper when it's closed to open it
-        volCtrl.onclick = (e) => {
-            if (!volCtrl.classList.contains('active')) {
-                volCtrl.classList.add('active');
-                e.stopPropagation();
-            }
-        };
-
-        volSlider.oninput = (e) => {
-            game.vol = parseInt(e.target.value);
-            game.muted = game.vol === 0;
-            updateAudio();
-        };
-
-        volSlider.onchange = () => save();
-
-        // Close slider when clicking outside or pressing ESC
-        window.addEventListener('click', (e) => {
-            if (!volCtrl.contains(e.target) && volCtrl.classList.contains('active')) {
-                volCtrl.classList.remove('active');
-            }
-        });
-
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && volCtrl.classList.contains('active')) {
-                volCtrl.classList.remove('active');
-            }
-        });
         document.getElementById('pause-icon').onclick = () => { game.paused = true; document.getElementById('scr-pause').classList.remove('hide'); };
         document.getElementById('resume-btn').onclick = () => { game.paused = false; document.getElementById('scr-pause').classList.add('hide'); };
         document.getElementById('restart-btn').onclick = () => { game.paused = false; document.getElementById('scr-pause').classList.add('hide'); init(); };
         document.getElementById('back-menu').onclick = () => { game.paused = false; document.getElementById('scr-pause').classList.add('hide'); document.getElementById('scr-menu').classList.remove('hide'); };
         document.getElementById('res-menu').onclick = () => { document.getElementById('scr-res').classList.add('hide'); document.getElementById('scr-menu').classList.remove('hide'); };
         document.getElementById('retry-btn').onclick = () => { document.getElementById('scr-res').classList.add('hide'); init(); game.act = true; game.lt = performance.now(); };
-        document.getElementById('switch-music').onclick = () => { cTrack = (cTrack + 1) % PLAYLIST.length; player.loadVideoById(PLAYLIST[cTrack].id); };
 
         function boot() { 
             canvas.width = canvas.offsetWidth; 
             canvas.height = canvas.offsetHeight; 
             syncHUD(); 
-            updateAudio();
             loop(performance.now()); 
         }
         window.onresize = boot; boot();
