@@ -591,9 +591,8 @@
         let nextObsY = -1000;
 
         function popQuiz() {
-            if (!game.act && document.getElementById('scr-quiz').classList.contains('hide') === false) return;
+            if (document.getElementById('scr-quiz').classList.contains('hide') === false) return;
             
-            game.act = false; 
             const q = QUIZ_LIST[Math.floor(Math.random() * QUIZ_LIST.length)];
             const scr = document.getElementById('scr-quiz');
             const card = scr.querySelector('div'); 
@@ -644,7 +643,6 @@
                 
                 setTimeout(() => { 
                     scr.classList.add('hide'); 
-                    // game.act = true; 
                     game.qClock = 0; 
                     game.lt = performance.now();
                 }, 1000);
