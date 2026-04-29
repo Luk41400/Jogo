@@ -885,9 +885,9 @@ function changeLang(l) {
                 if (game.started) {
                     game.qClock += dt; 
                     
-                    // LÓGICA DO FAROL DE RUA (3s DE ANTECIPAÇÃO)
+                    // LÓGICA DO FAROL DE RUA (3s DE ANTECIPAÇÃO) - DESATIVADO A PEDIDO
                     game.roadEv.clock += dt;
-                    if (!game.roadEv.active && game.roadEv.clock >= game.roadEv.next) {
+                    if (false && !game.roadEv.active && game.roadEv.clock >= game.roadEv.next) {
                         game.roadEv.active = true;
                         game.roadEv.clock = 0;
                         game.roadEv.y = -2000; 
