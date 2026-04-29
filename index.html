@@ -360,6 +360,8 @@
 
         <div class="ctrl-hud">
             <button id="pause-icon" class="btn-icon">⏸️</button>
+            <button id="admin-icon" class="btn-icon" style="font-size:1.5rem;" title="Admin Login">🛡️</button>
+            <button id="exit-admin-btn" class="btn-icon hide" style="background:#c0392b; font-size:1.5rem;" title="Exit Admin">❌</button>
         </div>
 
         <div id="track-map">
@@ -398,11 +400,6 @@
             <button class="btn" id="start-btn">START RACE</button>
             <button class="btn" style="background:#444" id="tut-btn">HOW TO PLAY</button>
             <button class="btn" style="background:#444" id="garage-btn">GARAGE</button>
-            
-            <div style="display:flex; gap:10px; margin-top:5px; margin-bottom:15px; justify-content:center; width:100%;">
-                <button class="btn" style="background:#222; padding:8px 15px; font-size:1rem; width:auto; flex:1;" id="admin-icon" title="Admin Login">🛡️</button>
-                <button class="btn hide" style="background:#c0392b; padding:8px 15px; font-size:1rem; width:auto; flex:1;" id="exit-admin-btn" title="Exit Admin">❌</button>
-            </div>
 
             <div class="disclaimer" id="disc-text">Rules comply with Brazilian Traffic Laws</div>
         </div>
@@ -1008,10 +1005,12 @@ function changeLang(l) {
             const p = prompt("ADMIN PASSWORD:");
             if (p === "1977") {
                 game.isAdmin = true;
+                if(game.preAdminM === undefined) game.preAdminM = game.m; // Guarda o dinheiro real
+                game.m = 100000;
                 document.getElementById('admin-icon').classList.add('hide');
                 document.getElementById('exit-admin-btn').classList.remove('hide');
                 showPopup("ADMIN MODE ACTIVATED", "var(--safety-cyan)");
-                game.m += 100000; save(); syncHUD(); // Give cheat money
+                save(); syncHUD(); 
             } else if (p !== null && p !== "") {
                 showPopup("DENIED", "red");
             }
@@ -1019,9 +1018,13 @@ function changeLang(l) {
 
         document.getElementById('exit-admin-btn').onclick = () => {
             game.isAdmin = false;
+            if (game.preAdminM !== undefined) {
+                game.m = game.preAdminM;
+            }
             document.getElementById('exit-admin-btn').classList.add('hide');
             document.getElementById('admin-icon').classList.remove('hide');
             showPopup("ADMIN MODE DEACTIVATED", "white");
+            save(); syncHUD();
         };
 
         function boot() {
