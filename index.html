@@ -400,6 +400,7 @@
             <button class="btn" id="start-btn">START RACE</button>
             <button class="btn" style="background:#444" id="tut-btn">HOW TO PLAY</button>
             <button class="btn" style="background:#444" id="garage-btn">GARAGE</button>
+            <button class="btn" style="background:#2c3e50" id="shop-btn">UPGRADE SHOP</button>
 
             <div class="disclaimer" id="disc-text">Regras conforme as Leis de Trânsito Brasileiras</div>
         </div>
@@ -426,6 +427,16 @@
             </div>
             <div id="car-list" style="width:100%; max-height:55vh; overflow-y:auto; margin:15px 0; padding-right:10px;"></div>
             <button class="btn" id="exit-garage">BACK</button>
+        </div>
+
+        <!-- SHOP -->
+        <div id="scr-shop" class="screen hide">
+            <h1 id="shop-title" style="color:var(--caution-yellow)">OFICINA</h1>
+            <div class="stat-badge" style="margin:10px 0; border-left-color:var(--caution-yellow)">
+                BALANCE: <span id="m-shop" style="color:var(--caution-yellow)">$0</span>
+            </div>
+            <div id="upgrade-list" style="width:100%; max-height:55vh; overflow-y:auto; margin:15px 0; padding-right:10px;"></div>
+            <button class="btn" id="exit-shop">BACK</button>
         </div>
 
         <!-- QUIZ -->
@@ -475,11 +486,11 @@
         let cTrack = 0;
 
         const CARS = [
-            { id: 0, n: "Hatch Pop", p: 0, s: 6, a: 0.1, c: "#999", t: 'hatch', g: 15000 },
-            { id: 1, n: "Sedan Premium", p: 500, s: 9, a: 0.2, c: "#33c", t: 'sedan', g: 30000 },
-            { id: 2, n: "SUV Adventure", p: 1200, s: 13, a: 0.35, c: "#262", t: 'suv', g: 45000 },
-            { id: 3, n: "Esportivo GT", p: 2500, s: 20, a: 0.7, c: "#e1a100", t: 'sport', g: 80000 },
-            { id: 4, n: "F1 MONOPOSTO", p: 6000, s: 35, a: 1.5, c: "#e10600", t: 'f1', g: 150000 }
+            { id: 0, n: "Hatch Pop", p: 0, s: 6, a: 0.1, c: "#999", t: 'hatch', g: 15000, lvl: 1, maxLvl: 5 },
+            { id: 1, n: "Sedan Premium", p: 500, s: 9, a: 0.2, c: "#33c", t: 'sedan', g: 30000, lvl: 1, maxLvl: 5 },
+            { id: 2, n: "SUV Adventure", p: 1200, s: 13, a: 0.35, c: "#262", t: 'suv', g: 45000, lvl: 1, maxLvl: 5 },
+            { id: 3, n: "Esportivo GT", p: 2500, s: 20, a: 0.7, c: "#e1a100", t: 'sport', g: 80000, lvl: 1, maxLvl: 5 },
+            { id: 4, n: "F1 MONOPOSTO", p: 6000, s: 35, a: 1.5, c: "#e10600", t: 'f1', g: 150000, lvl: 1, maxLvl: 1 }
         ];
 
         const QUIZ_LIST = {
@@ -570,25 +581,12 @@
             { q: "黄灯时的正确行为是什么？", a: "减速并停车", o: ["快速加速", "急刹车", "保持速度"] },
             { q: "黄灯指示什么？", a: "注意：即将红灯", o: ["全速前进", "灯坏了", "右转"] },
             { q: "黄灯时加速安全吗？", a: "不，事故高发", o: ["是的", "只有当你很远时", "如果没有警察"] },
-            { q: "路口黄灯闪烁表示：", a: "注意周围环境", o: ["全速前进", "停车", "调头"] }
-        ],
-        green: [
-            { q: "绿灯亮但十字路口被堵塞。 你：", a: "在线前等待", o: ["直接进入", "大声鸣笛", "后退"] },
-            { q: "信号变绿。 首先要检查什么？", a: "交叉路口是否畅通", o: ["你的手机", "收音机", "胎压"] },
-            { q: "高速闯绿灯是：", a: "路口不安全", o: ["正确的", "专业的", "必须的"] }
-        ],
-        general: [
-            { q: "通过骑自行车人的安全侧向距离？", a: "1.5米", o: ["0.5米", "靠近", "10米"] },
-            { q: "安全带使用对于_____是强制性的：", a: "车内所有人", o: ["仅驾驶员", "仅前排座椅", "仅旧车"] },
-            { q: "开车时使用手机会使事故风险增加：", a: "400%", o: ["10%", "0%", "2%"] }
-        ]
-    }
-};
-
-const I18N = {
-    pt: { hs: "SEGURANÇA NA ESTRADA", hp: "DURABILIDADE", nitro: "NITRO", goal: "META:", bal: "SALDO ACUMULADO: $", balMenu: "SALDO ATUAL: $", balGarage: "SEU SALDO: $", start: "INICIAR CORRIDA", how: "COMO JOGAR", garage: "GARAGEM", tutTitle: "TUTORIAL", tutText: "• <b>W / ⬆️</b>: Acelerar<br>• <b>S / ⬇️</b>: Frear / Ré<br>• <b>A - D / ⬅️ - ➡️</b>: Direção<br>• <b>ESPAÇO</b>: Ativar <b>NITRO</b><br>• <b>QUIZ</b>: Resolva em 10s para ganhar $ e HP!<br>• <b>GARAGEM</b>: Compre carros melhores.", back: "VOLTAR", garTitle: "GARAGEM", buy: "COMPRAR", owned: "POSSUI", equip: "EQUIPADO", select: "SELECIONAR", locked: "BLOQUEADO", paused: "PAUSADO", resume: "VOLTAR", restart: "REINICIAR", menu: "MENU PRINCIPAL", end: "FIM", victory: "VITÓRIA!", failed: "FALHOU", retry: "TENTAR NOV.", menuBtn: "MENU", trafficPop: "🚦 FAROL À FRENTE!!", kmh: "KM/H", disc: "Regras conforme as Leis de Trânsito Brasileiras" },
-    en: { hs: "SECURITY ON THE ROAD", hp: "DURABILITY", nitro: "NITRO", goal: "GOAL:", bal: "BALANCE: $", balMenu: "CURRENT BALANCE: $", balGarage: "YOUR BALANCE: $", start: "START RACE", how: "HOW TO PLAY", garage: "GARAGE", tutTitle: "TUTORIAL", tutText: "• <b>W / ⬆️</b>: Accelerate<br>• <b>S / ⬇️</b>: Brake / Reverse<br>• <b>A - D / ⬅️ - ➡️</b>: Steering<br>• <b>SPACE</b>: Activate <b>NITRO</b><br>• <b>QUIZ</b>: Solve in 10s to gain $ and HP!<br>• <b>GARAGE</b>: Buy cars to improve stats.", back: "BACK", garTitle: "GARAGE", buy: "BUY", owned: "OWNED", equip: "EQUIPPED", select: "SELECT", locked: "LOCKED", paused: "PAUSED", resume: "RESUME", restart: "RESTART", menu: "MAIN MENU", end: "END", victory: "VICTORY!", failed: "FAILED", retry: "RETRY", menuBtn: "MENU", trafficPop: "🚦 TRAFFIC LIGHT AHEAD!!", kmh: "KM/H", disc: "Rules comply with Brazilian Traffic Laws" },
-    es: { hs: "SEGURIDAD EN LA VÍA", hp: "DURABILIDAD", nitro: "NITRO", goal: "META:", bal: "SALDO: $", balMenu: "SALDO ACTUAL: $", balGarage: "TU SALDO: $", start: "INICIAR CARRERA", how: "CÓMO JUGAR", garage: "GARAJE", tutTitle: "TUTORIAL", tutText: "• <b>W / ⬆️</b>: Acelerar<br>• <b>S / ⬇️</b>: Frenar / Marcha atrás<br>• <b>A - D / ⬅️ - ➡️</b>: Dirección<br>• <b>ESPACIO</b>: Activar <b>NITRO</b><br>• <b>QUIZ</b>: ¡Resuelve en 10s para ganar $ y HP!<br>• <b>GARAJE</b>: Compra coches.", back: "VOLVER", garTitle: "GARAJE", buy: "COMPRAR", owned: "OBTENIDO", equip: "EQUIPADO", select: "SELECCIONAR", locked: "BLOQUEADO", paused: "PAUSADO", resume: "REANUDAR", restart: "REINICIAR", menu: "MENÚ PRINCIPAL", end: "FIN", victory: "¡VICTORIA!", failed: "FRACASÓ", retry: "REINTENTAR", menuBtn: "MENÚ", trafficPop: "🚦 ¡SEMBÁFORO EN ADELANTE!", kmh: "KM/H", disc: "Reglas conforme a las Leyes de Tránsito Brasileñas" },
+            { q: "路口黄灯闪烁表示：", a: "注意周围环境", o: ["�const I18N = {
+    pt: { hs: "SEGURANÇA NA ESTRADA", hp: "DURABILIDADE", nitro: "NITRO", goal: "META:", bal: "SALDO ACUMULADO: $", balMenu: "SALDO ATUAL: $", balGarage: "SEU SALDO: $", start: "INICIAR CORRIDA", how: "COMO JOGAR", garage: "GARAGEM", shop: "LOJA DE MELHORIAS", shopTitle: "OFICINA", lvl: "NÍVEL", upg: "MELHORAR", max: "MÁXIMO", tutTitle: "TUTORIAL", tutText: "• <b>W / ⬆️</b>: Acelerar<br>• <b>S / ⬇️</b>: Frear / Ré<br>• <b>A - D / ⬅️ - ➡️</b>: Direção<br>• <b>ESPAÇO</b>: Ativar <b>NITRO</b><br>• <b>QUIZ</b>: Resolva em 10s para ganhar $ e HP!<br>• <b>GARAGEM</b>: Compre carros melhores.", back: "VOLTAR", garTitle: "GARAGEM", buy: "COMPRAR", owned: "POSSUI", equip: "EQUIPADO", select: "SELECIONAR", locked: "BLOQUEADO", paused: "PAUSADO", resume: "VOLTAR", restart: "REINICIAR", menu: "MENU PRINCIPAL", end: "FIM", victory: "VITÓRIA!", failed: "FALHOU", retry: "TENTAR NOV.", menuBtn: "MENU", trafficPop: "🚦 FAROL À FRENTE!!", kmh: "KM/H", disc: "Regras conforme as Leis de Trânsito Brasileiras" },
+    en: { hs: "SECURITY ON THE ROAD", hp: "DURABILITY", nitro: "NITRO", goal: "GOAL:", bal: "BALANCE: $", balMenu: "CURRENT BALANCE: $", balGarage: "YOUR BALANCE: $", start: "START RACE", how: "HOW TO PLAY", garage: "GARAGE", shop: "UPGRADE SHOP", shopTitle: "WORKSHOP", lvl: "LEVEL", upg: "UPGRADE", max: "MAX", tutTitle: "TUTORIAL", tutText: "• <b>W / ⬆️</b>: Accelerate<br>• <b>S / ⬇️</b>: Brake / Reverse<br>• <b>A - D / ⬅️ - ➡️</b>: Steering<br>• <b>SPACE</b>: Activate <b>NITRO</b><br>• <b>QUIZ</b>: Solve in 10s to gain $ and HP!<br>• <b>GARAGE</b>: Buy cars to improve stats.", back: "BACK", garTitle: "GARAGE", buy: "BUY", owned: "OWNED", equip: "EQUIPPED", select: "SELECT", locked: "LOCKED", paused: "PAUSED", resume: "RESUME", restart: "RESTART", menu: "MAIN MENU", end: "END", victory: "VICTORY!", failed: "FAILED", retry: "RETRY", menuBtn: "MENU", trafficPop: "🚦 TRAFFIC LIGHT AHEAD!!", kmh: "KM/H", disc: "Rules comply with Brazilian Traffic Laws" },
+    es: { hs: "SEGURIDAD EN LA VÍA", hp: "DURABILIDAD", nitro: "NITRO", goal: "META:", bal: "SALDO: $", balMenu: "SALDO ACTUAL: $", balGarage: "TU SALDO: $", start: "INICIAR CARRERA", how: "CÓMO JUGAR", garage: "GARAJE", shop: "TIENDA DE MEJORAS", shopTitle: "TALLER", lvl: "NIVEL", upg: "MEJORAR", max: "MÁXIMO", tutTitle: "TUTORIAL", tutText: "• <b>W / ⬆️</b>: Acelerar<br>• <b>S / ⬇️</b>: Frenar / Marcha atrás<br>• <b>A - D / ⬅️ - ➡️</b>: Dirección<br>• <b>ESPACIO</b>: Activar <b>NITRO</b><br>• <b>QUIZ</b>: ¡Resuelve en 10s para ganar $ y HP!<br>• <b>GARAJE</b>: Compra coches.", back: "VOLVER", garTitle: "GARAJE", buy: "COMPRAR", owned: "OBTENIDO", equip: "EQUIPADO", select: "SELECCIONAR", locked: "BLOQUEADO", paused: "PAUSADO", resume: "REANUDAR", restart: "REINICIAR", menu: "MENÚ PRINCIPAL", end: "FIN", victory: "¡VICTORIA!", failed: "FRACASÓ", retry: "REINTENTAR", menuBtn: "MENÚ", trafficPop: "🚦 ¡SEMBÁFORO EN ADELANTE!", kmh: "KM/H", disc: "Regras conforme a las Leyes de Trânsito Brasileñas" },
+    zh: { hs: "道路安全", hp: "耐久度", nitro: "氮气", goal: "目标：", bal: "余额：$", balMenu: "当前余额：$", balGarage: "你的余额：$", start: "开始比赛", how: "怎么玩", garage: "车库", shop: "升级商店", shopTitle: "工作间", lvl: "等级", upg: "升级", max: "最大", tutTitle: "教程", tutText: "• <b>W / ⬆️</b>: 加速<br>• <b>S / ⬇️</b>: 刹车 / 倒车<br>• <b>A - D / ⬅️ - ➡️</b>: 转向<br>• <b>空格</b>: 激活 <b>氮气</b><br>• <b>测试</b>: 解答可获得金钱！<br>• <b>车库</b>: 购买汽车。", back: "返回", garTitle: "车库", buy: "购买", owned: "拥有", equip: "装备", select: "选择", locked: "锁定", paused: "暂停", resume: "继续", restart: "重新开始", menu: "主菜单", end: "结束", victory: "胜利！", failed: "失败", retry: "重试", menuBtn: "菜单", trafficPop: "🚦 前方有红绿灯!!", kmh: "KM/H", disc: "规则符合巴西交通法" }
+};equip: "EQUIPADO", select: "SELECCIONAR", locked: "BLOQUEADO", paused: "PAUSADO", resume: "REANUDAR", restart: "REINICIAR", menu: "MENÚ PRINCIPAL", end: "FIN", victory: "¡VICTORIA!", failed: "FRACASÓ", retry: "REINTENTAR", menuBtn: "MENÚ", trafficPop: "🚦 ¡SEMBÁFORO EN ADELANTE!", kmh: "KM/H", disc: "Reglas conforme a las Leyes de Tránsito Brasileñas" },
     zh: { hs: "道路安全", hp: "耐久度", nitro: "氮气", goal: "目标：", bal: "余额：$", balMenu: "当前余额：$", balGarage: "你的余额：$", start: "开始比赛", how: "怎么玩", garage: "车库", tutTitle: "教程", tutText: "• <b>W / ⬆️</b>: 加速<br>• <b>S / ⬇️</b>: 刹车 / 倒车<br>• <b>A - D / ⬅️ - ➡️</b>: 转向<br>• <b>空格</b>: 激活 <b>氮气</b><br>• <b>测试</b>: 解答可获得金钱！<br>• <b>车库</b>: 购买汽车。", back: "返回", garTitle: "车库", buy: "购买", owned: "拥有", equip: "装备", select: "选择", locked: "锁定", paused: "暂停", resume: "继续", restart: "重新开始", menu: "主菜单", end: "结束", victory: "胜利！", failed: "失败", retry: "重试", menuBtn: "菜单", trafficPop: "🚦 前方有红绿灯!!", kmh: "KM/H", disc: "规则符合巴西交通法" }
 };
 let curLang = localStorage.getItem('otr_lang') || 'pt';
@@ -612,6 +610,9 @@ function applyLang() {
     document.getElementById('retry-btn').innerText = l.retry;
     document.getElementById('ts').innerText = l.kmh;
     document.getElementById('pause-title').innerText = l.paused;
+    document.getElementById('shop-btn').innerText = l.shop;
+    document.getElementById('shop-title').innerText = l.shopTitle;
+    document.getElementById('exit-shop').innerText = l.back;
     document.getElementById('disc-text').innerText = l.disc;
     document.getElementById('goal-label').innerText = l.goal;
     document.getElementById('main-title').innerText = l.hs;
@@ -629,6 +630,7 @@ function changeLang(l) {
         let game = {
             m: parseInt(localStorage.getItem('otr_314_m')) || 0,
             o: JSON.parse(localStorage.getItem('otr_314_o')) || [0],
+            upgs: JSON.parse(localStorage.getItem('otr_314_upgs')) || [1, 1, 1, 1, 1], // Nivel de cada carro
             sel: Math.min(parseInt(localStorage.getItem('otr_314_s')) || 0, CARS.length - 1),
             vol: isNaN(parseInt(localStorage.getItem('otr_314_vol'))) ? 100 : parseInt(localStorage.getItem('otr_314_vol')),
             muted: localStorage.getItem('otr_314_muted') === 'true',
@@ -643,6 +645,7 @@ function changeLang(l) {
         function save() {
             localStorage.setItem('otr_314_m', game.m);
             localStorage.setItem('otr_314_o', JSON.stringify(game.o));
+            localStorage.setItem('otr_314_upgs', JSON.stringify(game.upgs));
             localStorage.setItem('otr_314_s', game.sel);
             localStorage.setItem('otr_314_vol', game.vol);
             localStorage.setItem('otr_314_muted', game.muted);
@@ -664,6 +667,7 @@ function changeLang(l) {
             document.getElementById('m-val').innerText = '$' + m;
             document.getElementById('m-menu').innerText = '$' + m;
             document.getElementById('m-garage').innerText = '$' + m;
+            if (document.getElementById('m-shop')) document.getElementById('m-shop').innerText = '$' + m;
             document.getElementById('hp-bar').style.width = (game.hp || 0) + '%';
             document.getElementById('nitro-bar').style.width = (game.nitro || 0) + '%';
             document.getElementById('sp-num').innerText = Math.abs(Math.floor((game.v || 0) * 12));
@@ -841,7 +845,12 @@ function changeLang(l) {
     }
 
         function init() {
-            const c = CARS[game.sel];
+            const level = game.upgs[game.sel];
+            const c = { ...CARS[game.sel] };
+            // Aumenta stats com base no nível
+            c.s = c.s * (1 + (level - 1) * 0.15);
+            c.a = c.a * (1 + (level - 1) * 0.2);
+
             game.hp = 100; game.d = 0; game.v = 0; game.px = 300; game.qClock = 0; game.started = false; game.obs = []; game.nitro = 100; game.nCD = 0; game.qActive = false;
             game.goal = c.g || 20000;
             game.roadEv = { active: false, color: '', clock: 0, next: 8, duration: 6, y: -2000, objDelay: 0 };
@@ -855,7 +864,10 @@ function changeLang(l) {
         function loop(now) {
             if (game.act && !game.paused) {
                 const dt = (now - game.lt) / 1000; game.lt = now;
-                const c = CARS[game.sel];
+                const level = game.upgs[game.sel];
+                const c = { ...CARS[game.sel] };
+                c.s = c.s * (1 + (level - 1) * 0.15);
+                c.a = c.a * (1 + (level - 1) * 0.2);
                 
                 if (!game.qActive) {
                     if (keys['w'] || keys['ArrowUp']) { game.v += c.a; game.started = true; }
@@ -993,6 +1005,35 @@ function changeLang(l) {
             document.getElementById('scr-garage').classList.remove('hide');
         };
         document.getElementById('exit-garage').onclick = () => document.getElementById('scr-garage').classList.add('hide');
+
+        document.getElementById('shop-btn').onclick = () => {
+            const list = document.getElementById('upgrade-list'); list.innerHTML = '';
+            CARS.forEach((v, index) => {
+                const has = game.o.includes(v.id);
+                const lvl = game.upgs[v.id];
+                const isMax = lvl >= v.maxLvl;
+                const cost = lvl * 300 + (v.p * 0.5);
+                
+                const card = document.createElement('div'); 
+                card.style = `background:#000; padding:12px; margin-bottom:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; border:1px solid #333; opacity:${has ? 1 : 0.4};`;
+                card.innerHTML = `<div><b>${v.n}</b><br><small>${t('lvl')}: ${lvl}/${v.maxLvl}</small></div>
+                                <button class="btn" style="margin:0; padding:6px 12px; font-size:0.8rem;" ${(!has || isMax) ? 'disabled' : ''}>
+                                    ${isMax ? t('max') : (has ? t('upg') + ' $' + cost : t('locked'))}
+                                </button>`;
+                
+                if (has && !isMax) card.querySelector('button').onclick = () => {
+                    if (game.m >= cost) {
+                        game.m -= cost;
+                        game.upgs[v.id]++;
+                        save();
+                        document.getElementById('shop-btn').click();
+                    }
+                };
+                list.appendChild(card);
+            });
+            document.getElementById('scr-shop').classList.remove('hide');
+        };
+        document.getElementById('exit-shop').onclick = () => document.getElementById('scr-shop').classList.add('hide');
 
         document.getElementById('pause-icon').onclick = () => { game.paused = true; document.getElementById('scr-pause').classList.remove('hide'); };
         document.getElementById('resume-btn').onclick = () => { game.paused = false; document.getElementById('scr-pause').classList.add('hide'); };
