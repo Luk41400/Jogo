@@ -913,7 +913,7 @@ function t(key) { return I18N[curLang][key]; }
                     
                     const diffScale = 1 + (game.d / game.goal) * 2.5;
                     game.obs.forEach(o => { 
-                        o.y += game.v + (o.sp * diffScale); 
+                        o.y += game.v + (game.qActive ? 0 : (o.sp * diffScale)); 
                         // Colisão ajustada para ignorar quando parado no farol
                         if (game.v > 1 && Math.abs(o.x - game.px) < 40 && Math.abs(o.y - (canvas.height - 180)) < 75) { 
                             game.hp -= 0.8; game.v *= 0.85; 
