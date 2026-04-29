@@ -359,10 +359,6 @@
         </div>
 
         <div class="ctrl-hud">
-            <div id="vol-ctrl" class="vol-wrapper">
-                <div id="mute-icon" class="vol-icon">🔊</div>
-                <input type="range" id="vol-slider" class="vol-slider" min="0" max="100" value="100">
-            </div>
             <button id="pause-icon" class="btn-icon">⏸️</button>
         </div>
 
@@ -558,12 +554,11 @@
             document.getElementById('p-marker').style.bottom = Math.min(295, ((game.d || 0) / game.goal) * 295) + 'px';
         }
 
-        function drawV(ctx, x, y, color, type) {
+        function drawV(ctx, x, y, color, type, isPlayer) {
             ctx.save(); ctx.translate(x, y);
             
             // FOGO DO NITRO
-            const playerCar = CARS[game.sel];
-            if (playerCar && game.isNitro && type === playerCar.t) {
+            if (isPlayer && game.isNitro) {
                 ctx.fillStyle = game.nColor;
                 for(let i=0; i<3; i++) {
                     ctx.beginPath();
@@ -842,9 +837,9 @@
             ctx.fillStyle = '#222'; ctx.fillRect(150, 0, 300, canvas.height);
             ctx.setLineDash([40, 40]); ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.beginPath(); ctx.moveTo(300, -100 + game.offset); ctx.lineTo(300, canvas.height + 100 + game.offset); ctx.stroke();
 
-            game.obs.forEach(o => drawV(ctx, o.x, o.y, o.c, o.t));
+            game.obs.forEach(o => drawV(ctx, o.x, o.y, o.c, o.t, false));
             if (game.roadEv.active && game.roadEv.objDelay <= 0) drawPost(ctx, game.roadEv.y, game.roadEv.color);
-            drawV(ctx, game.px, canvas.height - 180, CARS[game.sel].c, CARS[game.sel].t);
+            drawV(ctx, game.px, canvas.height - 180, CARS[game.sel].c, CARS[game.sel].t, true);
             requestAnimationFrame(loop);
         }
 
@@ -881,56 +876,6 @@
         };
         document.getElementById('exit-garage').onclick = () => document.getElementById('scr-garage').classList.add('hide');
 
-        const volCtrl = document.getElementById('vol-ctrl');
-        const volSlider = document.getElementById('vol-slider');
-        const muteIcon = document.getElementById('mute-icon');
-
-        function updateAudio() {
-            if (isNaN(game.vol)) game.vol = 100;
-            audio.volume = Math.max(0, Math.min(1, game.vol / 100));
-            audio.muted = game.muted || game.vol === 0;
-            muteIcon.innerText = audio.muted ? "🔇" : "🔊";
-            volSlider.value = game.vol;
-        }
-
-        muteIcon.onclick = (e) => {
-            e.stopPropagation();
-            if (volCtrl.classList.contains('active')) {
-                game.muted = !game.muted;
-                updateAudio();
-                save();
-            } else {
-                volCtrl.classList.add('active');
-            }
-        };
-
-        volCtrl.onclick = (e) => {
-            if (!volCtrl.classList.contains('active')) {
-                volCtrl.classList.add('active');
-                e.stopPropagation();
-            }
-        };
-
-        volSlider.oninput = (e) => {
-            game.vol = parseInt(e.target.value);
-            if (isNaN(game.vol)) game.vol = 100;
-            game.muted = game.vol === 0;
-            updateAudio();
-        };
-
-        volSlider.onchange = () => save();
-
-        window.addEventListener('click', (e) => {
-            if (!volCtrl.contains(e.target) && volCtrl.classList.contains('active')) {
-                volCtrl.classList.remove('active');
-            }
-        });
-
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && volCtrl.classList.contains('active')) {
-                volCtrl.classList.remove('active');
-            }
-        });
         document.getElementById('pause-icon').onclick = () => { game.paused = true; document.getElementById('scr-pause').classList.remove('hide'); };
         document.getElementById('resume-btn').onclick = () => { game.paused = false; document.getElementById('scr-pause').classList.add('hide'); };
         document.getElementById('restart-btn').onclick = () => { game.paused = false; document.getElementById('scr-pause').classList.add('hide'); init(); };
@@ -942,7 +887,6 @@
             canvas.width = canvas.offsetWidth;
             canvas.height = canvas.offsetHeight;
             syncHUD();
-            updateAudio();
             loop(performance.now());
         }
         window.onresize = boot; boot();
