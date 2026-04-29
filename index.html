@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
@@ -476,7 +476,9 @@
             { id: 4, n: "F1 MONOPOSTO", p: 6000, s: 35, a: 1.5, c: "#e10600", t: 'f1', g: 150000, lvl: 1, maxLvl: 1 }
         ];
 
-                        const QUIZ_LIST = {
+                                        let curLang = localStorage.getItem('otr_lang') || 'pt';
+
+        const QUIZ_LIST = {
             en: {
                 red: [
                     { q: "The light turned red. What should you do?", a: "Come to a full stop", o: ["Accelerate more", "Cross with caution", "Honk and cross"] },
