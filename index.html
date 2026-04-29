@@ -404,6 +404,21 @@
             <div class="disclaimer" id="disc-text">Regras conforme as Leis de Trânsito Brasileiras</div>
         </div>
 
+        
+        <!-- TUTORIAL -->
+        <div id="scr-tut" class="screen hide">
+            <h1 id="tut-title" style="color:var(--safety-cyan)">TUTORIAL</h1>
+            <div class="tut-box" id="tut-text">
+                • <b>W / ⬆️</b>: Accelerate<br>
+                • <b>S / ⬇️</b>: Brake / Reverse<br>
+                • <b>A - D / ⬅️ - ➡️</b>: Steering<br>
+                • <b>SPACE</b>: Activate <b>NITRO</b><br>
+                • <b>QUIZ</b>: Solve in 10s to gain $ and HP!<br>
+                • <b>GARAGE</b>: Buy cars to improve stats.
+            </div>
+            <button class="btn" id="exit-tut">BACK</button>
+        </div>
+
         <!-- GARAGE -->
         <div id="scr-garage" class="screen hide">
             <h1 id="gar-title" style="color:var(--safety-cyan)">GARAGE</h1>
@@ -649,7 +664,7 @@
             showSaveMsg();
         }
         function showSaveMsg() {
-            showPopup("ÃƒÂ°Ã…Â¸Ã¢â‚¬â„¢Ã‚Â¾ PROGRESS SAVED", "var(--safety-cyan)");
+            showPopup("💾 PROGRESS SAVED", "var(--safety-cyan)");
         }
         function showPopup(txt, color) {
             const msg = document.createElement('div');
