@@ -997,8 +997,8 @@ function changeLang(l) {
         document.getElementById('pause-icon').onclick = () => { game.paused = true; document.getElementById('scr-pause').classList.remove('hide'); };
         document.getElementById('resume-btn').onclick = () => { game.paused = false; document.getElementById('scr-pause').classList.add('hide'); };
         document.getElementById('restart-btn').onclick = () => { game.paused = false; document.getElementById('scr-pause').classList.add('hide'); init(); };
-        document.getElementById('back-menu').onclick = () => { game.paused = false; document.getElementById('scr-pause').classList.add('hide'); document.getElementById('scr-menu').classList.remove('hide'); };
-        document.getElementById('res-menu').onclick = () => { document.getElementById('scr-res').classList.add('hide'); document.getElementById('scr-menu').classList.remove('hide'); };
+        document.getElementById('back-menu').onclick = () => { game.act = false; game.paused = false; document.getElementById('scr-pause').classList.add('hide'); document.getElementById('scr-menu').classList.remove('hide'); };
+        document.getElementById('res-menu').onclick = () => { game.act = false; document.getElementById('scr-res').classList.add('hide'); document.getElementById('scr-menu').classList.remove('hide'); };
         document.getElementById('retry-btn').onclick = () => { document.getElementById('scr-res').classList.add('hide'); init(); game.act = true; game.lt = performance.now(); };
 
         document.getElementById('admin-icon').onclick = () => {
