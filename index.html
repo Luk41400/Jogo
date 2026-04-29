@@ -623,6 +623,12 @@ function applyLang() {
 
 function t(key) { return I18N[curLang][key]; }
 
+function changeLang(l) {
+    curLang = l;
+    localStorage.setItem('otr_lang', l);
+    applyLang();
+}
+
         let game = {
             m: parseInt(localStorage.getItem('otr_314_m')) || 0,
             o: JSON.parse(localStorage.getItem('otr_314_o')) || [0],
