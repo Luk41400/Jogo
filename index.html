@@ -760,7 +760,14 @@
 
                 game.v = Math.max(-c.s, Math.min(game.v, game.isNitro ? c.s * 1.5 : c.s));
                 game.px = Math.max(160, Math.min(440, game.px));
-                game.d += game.v; game.offset = (game.offset + game.v) % 120;
+                
+                if (game.d + game.v <= -1000) {
+                    game.v = 0;
+                    game.d = -1000;
+                } else {
+                    game.d += game.v; 
+                }
+                game.offset = (game.offset + game.v) % 120;
 
                 if (game.started) {
                     game.qClock += dt; 
