@@ -1005,7 +1005,6 @@ function changeLang(l) {
             const p = prompt("ADMIN PASSWORD:");
             if (p === "1977") {
                 game.isAdmin = true;
-                if(game.preAdminM === undefined) game.preAdminM = game.m; // Guarda o dinheiro real
                 game.m = 100000;
                 document.getElementById('admin-icon').classList.add('hide');
                 document.getElementById('exit-admin-btn').classList.remove('hide');
@@ -1018,9 +1017,7 @@ function changeLang(l) {
 
         document.getElementById('exit-admin-btn').onclick = () => {
             game.isAdmin = false;
-            if (game.preAdminM !== undefined) {
-                game.m = game.preAdminM;
-            }
+            game.m = 500;
             document.getElementById('exit-admin-btn').classList.add('hide');
             document.getElementById('admin-icon').classList.remove('hide');
             showPopup("ADMIN MODE DEACTIVATED", "white");
