@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
@@ -7,6 +7,7 @@
     <title>SECURITY ON THE ROAD | GLOBAL VERSION</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@900&family=Space+Grotesk:wght@700&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --f1-red: #E10600;
@@ -359,9 +360,9 @@
         </div>
 
         <div class="ctrl-hud">
-            <button id="pause-icon" class="btn-icon">⏸️</button>
-            <button id="admin-icon" class="btn-icon" style="font-size:1.5rem;" title="Admin Login">🛡️</button>
-            <button id="exit-admin-btn" class="btn-icon hide" style="background:#c0392b; font-size:1.5rem;" title="Exit Admin">❌</button>
+            <button id="pause-icon" class="btn-icon"><i class="fas fa-pause"></i></button>
+            <button id="admin-icon" class="btn-icon" style="font-size:1.5rem;" title="Admin Login"><i class="fas fa-user-shield"></i></button>
+            <button id="exit-admin-btn" class="btn-icon hide" style="background:#c0392b; font-size:1.5rem;" title="Exit Admin"><i class="fas fa-sign-out-alt"></i></button>
         </div>
 
         <div id="track-map">
@@ -401,23 +402,6 @@
             <button class="btn" style="background:#444" id="tut-btn">HOW TO PLAY</button>
             <button class="btn" style="background:#444" id="garage-btn">GARAGE</button>
             <button class="btn" style="background:#2c3e50" id="shop-btn">UPGRADE SHOP</button>
-
-            <div class="disclaimer" id="disc-text">Regras conforme as Leis de Trânsito Brasileiras</div>
-        </div>
-
-        <!-- TUTORIAL (REVERTED DESIGN) -->
-        <div id="scr-tut" class="screen hide">
-            <h1 id="tut-title" style="color:var(--safety-cyan)">TUTORIAL</h1>
-            <div class="tut-box" id="tut-text">
-                • <b>W / ⬆️</b>: Accelerate (Start movement)<br>
-                • <b>S / ⬇️</b>: Brake / Reverse Gear<br>
-                • <b>A - D / ⬅️ - ➡️</b>: Steering Controls<br>
-                • <b>SPACE</b>: Activate <b>NITRO</b> (Burst speed!)<br>
-                • <b>QUIZ</b>: Solve in 10s to gain $ and HP!<br>
-                • <b>GARAGE</b>: Buy cars in order to improve stats.
-            </div>
-            <button class="btn" id="exit-tut">BACK</button>
-        </div>
 
         <!-- GARAGE -->
         <div id="scr-garage" class="screen hide">
@@ -493,133 +477,116 @@
             { id: 4, n: "F1 MONOPOSTO", p: 6000, s: 35, a: 1.5, c: "#e10600", t: 'f1', g: 150000, lvl: 1, maxLvl: 1 }
         ];
 
-        const QUIZ_LIST = {
-    en: {
-        red: [
-            { q: "The light turned red. What should you do?", a: "Come to a full stop", o: ["Accelerate more", "Cross with caution", "Honk and cross"] },
-            { q: "Penalty for running a red light?", a: "Very Severe Fine", o: ["None", "Just a warning", "Light Fine"] },
-            { q: "At a red light, does the pedestrian have priority?", a: "Always", o: ["Never", "Only if senior", "Only with guards"] },
-            { q: "Stopping over the crosswalk on a red light is:", a: "Traffic violation", o: ["Permitted", "Recommended", "Optional"] },
-            { q: "An ambulance with sirens is behind you at a red light. You should:", a: "Carefully give way", o: ["Stay still", "Wait for green", "Honk back"] }
-        ],
-        yellow: [
-            { q: "What is the correct behavior for a yellow light?", a: "Slow down and stop", o: ["Accelerate quickly", "Brake suddenly", "Maintain speed"] },
-            { q: "What does the yellow light indicate?", a: "Attention: about to close", o: ["Go full speed", "Light broken", "Turn right"] },
-            { q: "Is it safe to accelerate on yellow?", a: "No, high risk of accident", o: ["Yes, always", "Only if far", "If no guards"] },
-            { q: "A flashing yellow light at an intersection means:", a: "Caution: check surroundings", o: ["Go full speed", "Stop the car", "Turn back"] }
-        ],
-        green: [
-            { q: "The light is green but the intersection is blocked. Do you:", a: "Wait before the line", o: ["Enter anyway", "Honk loudly", "Reverse"] },
-            { q: "Signal turned green. What is the first thing to check?", a: "If crossing is clear", o: ["Your phone", "The radio", "Tire pressure"] },
-            { q: "Driving through a green light at high speed is:", a: "Unsafe at intersections", o: ["Correct", "Professional", "Required"] }
-        ],
-        general: [
-            { q: "Safe side distance for passing a cyclist?", a: "1.5 meters", o: ["0.5m", "Close", "10 meters"] },
-            { q: "Seatbelt usage is mandatory for:", a: "Everyone in the vehicle", o: ["Only driver", "Only front seats", "Older cars only"] },
-            { q: "Using a phone while driving increases accident risk by:", a: "400%", o: ["10%", "0%", "2%"] }
-        ]
-    },
-    pt: {
-        red: [
-            { q: "O farol ficou vermelho. O que você deve fazer?", a: "Parar totalmente", o: ["Acelerar mais", "Cruzar com cuidado", "Buzinar e cruzar"] },
-            { q: "Penalidade por avançar o sinal vermelho?", a: "Multa Gravíssima", o: ["Nenhuma", "Apenas advertência", "Multa Leve"] },
-            { q: "No sinal vermelho, o pedestre tem prioridade?", a: "Sempre", o: ["Nunca", "Só idosos", "Só com guardas"] },
-            { q: "Parar sobre a faixa de pedestres no sinal vermelho é:", a: "Infração de trânsito", o: ["Permitido", "Recomendado", "Opcional"] },
-            { q: "Uma ambulância com sirene está atrás de você no farol vermelho:", a: "Dar passagem com cuidado", o: ["Ficar parado", "Esperar o verde", "Buzinar de volta"] }
-        ],
-        yellow: [
-            { q: "Qual o comportamento correto no sinal amarelo?", a: "Reduzir e parar", o: ["Acelerar rápido", "Frear bruscamente", "Manter velocidade"] },
-            { q: "O que indica a luz amarela?", a: "Atenção: vai fechar", o: ["Acelerar tudo", "Semáforo quebrado", "Vire à direita"] },
-            { q: "É seguro acelerar no farol amarelo?", a: "Não, alto risco de acidente", o: ["Sim, sempre", "Só se estiver longe", "Se não houver guardas"] },
-            { q: "Luz amarela piscante em um cruzamento significa:", a: "Cuidado: verifique os arredores", o: ["Vá a toda velocidade", "Pare o carro", "Volte"] }
-        ],
-        green: [
-            { q: "O farol está verde mas o cruzamento está bloqueado. Você:", a: "Espera antes da faixa", o: ["Entra assim mesmo", "Buzina alto", "Dá ré"] },
-            { q: "O sinal abriu. O que checar primeiro?", a: "Se o cruzamento está livre", o: ["O celular", "O rádio", "A pressão do pneu"] },
-            { q: "Passar no farol verde em alta velocidade é:", a: "Inseguro em cruzamentos", o: ["Correto", "Profissional", "Obrigatório"] }
-        ],
-        general: [
-            { q: "Distância lateral segura para passar ciclista?", a: "1.5 metros", o: ["0.5m", "Perto", "10 metros"] },
-            { q: "O uso do cinto de segurança é obrigatório para:", a: "Todos no veículo", o: ["Só o motorista", "Só os bancos da frente", "Só carros velhos"] },
-            { q: "Usar o celular ao volante aumenta o risco de acidente em:", a: "400%", o: ["10%", "0%", "2%"] }
-        ]
-    },
-    es: {
-        red: [
-            { q: "La luz se puso roja. ¿Qué debes hacer?", a: "Detenerse por completo", o: ["Acelerar más", "Cruzar con cuidado", "Tocar bocina y cruzar"] },
-            { q: "¿Multa por pasarse un semáforo en rojo?", a: "Multa Muy Grave", o: ["Ninguna", "Solo advertencia", "Multa Leve"] },
-            { q: "¿En semáforo rojo, el peatón tiene prioridad?", a: "Siempre", o: ["Nunca", "Solo mayores", "Solo con guardias"] },
-            { q: "Detenerse en el paso de peatones con luz roja es:", a: "Infracción de tráfico", o: ["Permitido", "Recomendado", "Opcional"] },
-            { q: "Una ambulancia con sirena está detrás en luz roja:", a: "Ceder el paso con cuidado", o: ["Quedarse quieto", "Esperar el verde", "Tocar bocina"] }
-        ],
-        yellow: [
-            { q: "¿Comportamiento correcto en luz amarilla?", a: "Reducir la velocidad y parar", o: ["Acelerar rápido", "Frenar de golpe", "Mantener velocidad"] },
-            { q: "¿Qué indica la luz amarilla?", a: "Atención: a punto de cerrar", o: ["Ir a toda velocidad", "Luz rota", "Girar a la derecha"] },
-            { q: "¿Es seguro acelerar en amarillo?", a: "No, alto riesgo", o: ["Sí, siempre", "Solo si está lejos", "Si no hay guardias"] },
-            { q: "Luz amarilla intermitente en una intersección significa:", a: "Precaución: revisa tu entorno", o: ["Acelera", "Para el auto", "Da la vuelta"] }
-        ],
-        green: [
-            { q: "La luz está verde pero la intersección está bloqueada:", a: "Esperar antes de la línea", o: ["Entrar de todos modos", "Tocar bocina", "Retroceder"] },
-            { q: "La señal se puso verde. ¿Qué revisar primero?", a: "Si el cruce está libre", o: ["Tu teléfono", "La radio", "Presión del neumático"] },
-            { q: "Cruzar un semáforo verde a alta velocidad es:", a: "Inseguro en intersecciones", o: ["Correcto", "Profesional", "Obligatorio"] }
-        ],
-        general: [
-            { q: "¿Distancia lateral segura para pasar a un ciclista?", a: "1.5 metros", o: ["0.5m", "Cerca", "10 metros"] },
-            { q: "¿El uso del cinturón de seguridad es obligatorio para:", a: "Todos en el vehículo", o: ["Solo el conductor", "Solo asientos delanteros", "Solo autos viejos"] },
-            { q: "Usar el teléfono mientras conduces aumenta el riesgo de accidente en:", a: "400%", o: ["10%", "0%", "2%"] }
-        ]
-    },
-    zh: {
-        red: [
-            { q: "红灯亮了。 你该怎么办？", a: "完全停止", o: ["加速", "小心通过", "鸣笛并通过"] },
-            { q: "闯红灯的处罚？", a: "非常严酷的罚款", o: ["没有", "只是警告", "轻微罚款"] },
-            { q: "在红灯下，行人有优先权吗？", a: "总是", o: ["从不", "只有老人", "只有保安"] },
-            { q: "红灯时停在人行道上是：", a: "交通违规", o: ["允许的", "推荐的", "可选的"] },
-            { q: "红灯时救护车在你后面鸣笛：", a: "小心让路", o: ["保持不动", "等绿灯", "按喇叭"] }
-        ],
-        yellow: [
-            { q: "黄灯时的正确行为是什么？", a: "减速并停车", o: ["快速加速", "急刹车", "保持速度"] },
-            { q: "黄灯指示什么？", a: "注意：即将红灯", o: ["全速前进", "灯坏了", "右转"] },
-            { q: "黄灯时加速安全吗？", a: "不，事故高发", o: ["是的", "只有当你很远时", "如果没有警察"] },
-            { q: "路口黄灯闪烁表示：", a: "注意周围环境", o: ["�const I18N = {
-    pt: { hs: "SEGURANÇA NA ESTRADA", hp: "DURABILIDADE", nitro: "NITRO", goal: "META:", bal: "SALDO ACUMULADO: $", balMenu: "SALDO ATUAL: $", balGarage: "SEU SALDO: $", start: "INICIAR CORRIDA", how: "COMO JOGAR", garage: "GARAGEM", shop: "LOJA DE MELHORIAS", shopTitle: "OFICINA", lvl: "NÍVEL", upg: "MELHORAR", max: "MÁXIMO", tutTitle: "TUTORIAL", tutText: "• <b>W / ⬆️</b>: Acelerar<br>• <b>S / ⬇️</b>: Frear / Ré<br>• <b>A - D / ⬅️ - ➡️</b>: Direção<br>• <b>ESPAÇO</b>: Ativar <b>NITRO</b><br>• <b>QUIZ</b>: Resolva em 10s para ganhar $ e HP!<br>• <b>GARAGEM</b>: Compre carros melhores.", back: "VOLTAR", garTitle: "GARAGEM", buy: "COMPRAR", owned: "POSSUI", equip: "EQUIPADO", select: "SELECIONAR", locked: "BLOQUEADO", paused: "PAUSADO", resume: "VOLTAR", restart: "REINICIAR", menu: "MENU PRINCIPAL", end: "FIM", victory: "VITÓRIA!", failed: "FALHOU", retry: "TENTAR NOV.", menuBtn: "MENU", trafficPop: "🚦 FAROL À FRENTE!!", kmh: "KM/H", disc: "Regras conforme as Leis de Trânsito Brasileiras" },
-    en: { hs: "SECURITY ON THE ROAD", hp: "DURABILITY", nitro: "NITRO", goal: "GOAL:", bal: "BALANCE: $", balMenu: "CURRENT BALANCE: $", balGarage: "YOUR BALANCE: $", start: "START RACE", how: "HOW TO PLAY", garage: "GARAGE", shop: "UPGRADE SHOP", shopTitle: "WORKSHOP", lvl: "LEVEL", upg: "UPGRADE", max: "MAX", tutTitle: "TUTORIAL", tutText: "• <b>W / ⬆️</b>: Accelerate<br>• <b>S / ⬇️</b>: Brake / Reverse<br>• <b>A - D / ⬅️ - ➡️</b>: Steering<br>• <b>SPACE</b>: Activate <b>NITRO</b><br>• <b>QUIZ</b>: Solve in 10s to gain $ and HP!<br>• <b>GARAGE</b>: Buy cars to improve stats.", back: "BACK", garTitle: "GARAGE", buy: "BUY", owned: "OWNED", equip: "EQUIPPED", select: "SELECT", locked: "LOCKED", paused: "PAUSED", resume: "RESUME", restart: "RESTART", menu: "MAIN MENU", end: "END", victory: "VICTORY!", failed: "FAILED", retry: "RETRY", menuBtn: "MENU", trafficPop: "🚦 TRAFFIC LIGHT AHEAD!!", kmh: "KM/H", disc: "Rules comply with Brazilian Traffic Laws" },
-    es: { hs: "SEGURIDAD EN LA VÍA", hp: "DURABILIDAD", nitro: "NITRO", goal: "META:", bal: "SALDO: $", balMenu: "SALDO ACTUAL: $", balGarage: "TU SALDO: $", start: "INICIAR CARRERA", how: "CÓMO JUGAR", garage: "GARAJE", shop: "TIENDA DE MEJORAS", shopTitle: "TALLER", lvl: "NIVEL", upg: "MEJORAR", max: "MÁXIMO", tutTitle: "TUTORIAL", tutText: "• <b>W / ⬆️</b>: Acelerar<br>• <b>S / ⬇️</b>: Frenar / Marcha atrás<br>• <b>A - D / ⬅️ - ➡️</b>: Dirección<br>• <b>ESPACIO</b>: Activar <b>NITRO</b><br>• <b>QUIZ</b>: ¡Resuelve en 10s para ganar $ y HP!<br>• <b>GARAJE</b>: Compra coches.", back: "VOLVER", garTitle: "GARAJE", buy: "COMPRAR", owned: "OBTENIDO", equip: "EQUIPADO", select: "SELECCIONAR", locked: "BLOQUEADO", paused: "PAUSADO", resume: "REANUDAR", restart: "REINICIAR", menu: "MENÚ PRINCIPAL", end: "FIN", victory: "¡VICTORIA!", failed: "FRACASÓ", retry: "REINTENTAR", menuBtn: "MENÚ", trafficPop: "🚦 ¡SEMBÁFORO EN ADELANTE!", kmh: "KM/H", disc: "Regras conforme a las Leyes de Trânsito Brasileñas" },
-    zh: { hs: "道路安全", hp: "耐久度", nitro: "氮气", goal: "目标：", bal: "余额：$", balMenu: "当前余额：$", balGarage: "你的余额：$", start: "开始比赛", how: "怎么玩", garage: "车库", shop: "升级商店", shopTitle: "工作间", lvl: "等级", upg: "升级", max: "最大", tutTitle: "教程", tutText: "• <b>W / ⬆️</b>: 加速<br>• <b>S / ⬇️</b>: 刹车 / 倒车<br>• <b>A - D / ⬅️ - ➡️</b>: 转向<br>• <b>空格</b>: 激活 <b>氮气</b><br>• <b>测试</b>: 解答可获得金钱！<br>• <b>车库</b>: 购买汽车。", back: "返回", garTitle: "车库", buy: "购买", owned: "拥有", equip: "装备", select: "选择", locked: "锁定", paused: "暂停", resume: "继续", restart: "重新开始", menu: "主菜单", end: "结束", victory: "胜利！", failed: "失败", retry: "重试", menuBtn: "菜单", trafficPop: "🚦 前方有红绿灯!!", kmh: "KM/H", disc: "规则符合巴西交通法" }
-};equip: "EQUIPADO", select: "SELECCIONAR", locked: "BLOQUEADO", paused: "PAUSADO", resume: "REANUDAR", restart: "REINICIAR", menu: "MENÚ PRINCIPAL", end: "FIN", victory: "¡VICTORIA!", failed: "FRACASÓ", retry: "REINTENTAR", menuBtn: "MENÚ", trafficPop: "🚦 ¡SEMBÁFORO EN ADELANTE!", kmh: "KM/H", disc: "Reglas conforme a las Leyes de Tránsito Brasileñas" },
-    zh: { hs: "道路安全", hp: "耐久度", nitro: "氮气", goal: "目标：", bal: "余额：$", balMenu: "当前余额：$", balGarage: "你的余额：$", start: "开始比赛", how: "怎么玩", garage: "车库", tutTitle: "教程", tutText: "• <b>W / ⬆️</b>: 加速<br>• <b>S / ⬇️</b>: 刹车 / 倒车<br>• <b>A - D / ⬅️ - ➡️</b>: 转向<br>• <b>空格</b>: 激活 <b>氮气</b><br>• <b>测试</b>: 解答可获得金钱！<br>• <b>车库</b>: 购买汽车。", back: "返回", garTitle: "车库", buy: "购买", owned: "拥有", equip: "装备", select: "选择", locked: "锁定", paused: "暂停", resume: "继续", restart: "重新开始", menu: "主菜单", end: "结束", victory: "胜利！", failed: "失败", retry: "重试", menuBtn: "菜单", trafficPop: "🚦 前方有红绿灯!!", kmh: "KM/H", disc: "规则符合巴西交通法" }
-};
-let curLang = localStorage.getItem('otr_lang') || 'pt';
+                const QUIZ_LIST = {
+            en: {
+                red: [
+                    { q: "The light turned red. What should you do?", a: "Come to a full stop", o: ["Accelerate more", "Cross with caution", "Honk and cross"] },
+                    { q: "Penalty for running a red light?", a: "Very Severe Fine", o: ["None", "Just a warning", "Light Fine"] },
+                    { q: "At a red light, does the pedestrian have priority?", a: "Always", o: ["Never", "Only if senior", "Only with guards"] },
+                    { q: "Stopping over the crosswalk on a red light is:", a: "Traffic violation", o: ["Permitted", "Recommended", "Optional"] },
+                    { q: "An ambulance with sirens is behind you at a red light. You should:", a: "Carefully give way", o: ["Stay still", "Wait for green", "Honk back"] }
+                ],
+                yellow: [
+                    { q: "What is the correct behavior for a yellow light?", a: "Slow down and stop", o: ["Accelerate quickly", "Brake suddenly", "Maintain speed"] },
+                    { q: "What does the yellow light indicate?", a: "Attention: about to close", o: ["Go full speed", "Light broken", "Turn right"] },
+                    { q: "Is it safe to accelerate on yellow?", a: "No, high risk of accident", o: ["Yes, always", "Only if far", "If no guards"] },
+                    { q: "A flashing yellow light at an intersection means:", a: "Caution: check surroundings", o: ["Go full speed", "Stop the car", "Turn back"] }
+                ],
+                green: [
+                    { q: "The light is green but the intersection is blocked. Do you:", a: "Wait before the line", o: ["Enter anyway", "Honk loudly", "Reverse"] },
+                    { q: "Signal turned green. What is the first thing to check?", a: "If crossing is clear", o: ["Your phone", "The radio", "Tire pressure"] },
+                    { q: "Driving through a green light at high speed is:", a: "Unsafe at intersections", o: ["Correct", "Professional", "Required"] }
+                ],
+                general: [
+                    { q: "Safe side distance for passing a cyclist?", a: "1.5 meters", o: ["0.5m", "Close", "10 meters"] },
+                    { q: "Seatbelt usage is mandatory for:", a: "Everyone in the vehicle", o: ["Only driver", "Only front seats", "Older cars only"] },
+                    { q: "Using a phone while driving increases accident risk by:", a: "400%", o: ["10%", "0%", "2%"] }
+                ]
+            },
+            pt: {
+                red: [
+                    { q: "O farol ficou vermelho. O que vocÃª deve fazer?", a: "Parar totalmente", o: ["Acelerar mais", "Cruzar com cuidado", "Buzinar e cruzar"] },
+                    { q: "Penalidade por avanÃ§ar o sinal vermelho?", a: "Multa GravÃ­ssima", o: ["Nenhuma", "Apenas advertÃªncia", "Multa Leve"] },
+                    { q: "No sinal vermelho, o pedestre tem prioridade?", a: "Sempre", o: ["Nunca", "SÃ³ idosos", "SÃ³ com guardas"] },
+                    { q: "Parar sobre a faixa de pedestres no sinal vermelho Ã©:", a: "InfraÃ§Ã£o de trÃ¢nsito", o: ["Permitido", "Recomendado", "Opcional"] },
+                    { q: "Uma ambulÃ¢ncia com sirene estÃ¡ atrÃ¡s de vocÃª no farol vermelho:", a: "Dar passagem com cuidado", o: ["Ficar parado", "Esperar o verde", "Buzinar de volta"] }
+                ],
+                yellow: [
+                    { q: "Qual o comportamento correto no sinal amarelo?", a: "Reduzir e parar", o: ["Acelerar rÃ¡pido", "Frear bruscamente", "Manter velocidade"] },
+                    { q: "O que indica a luz amarela?", a: "AtenÃ§Ã£o: vai fechar", o: ["Acelerar tudo", "SemÃ¡foro quebrado", "Vire Ã  direita"] },
+                    { q: "Ã‰ seguro acelerar no farol amarelo?", a: "NÃ£o, alto risco de acidente", o: ["Sim, sempre", "SÃ³ se estiver longe", "Se nÃ£o houver guardas"] },
+                    { q: "Luz amarela piscante em um cruzamento significa:", a: "Cuidado: verifique os arredores", o: ["VÃ¡ a toda velocidade", "Pare o carro", "Volte"] }
+                ],
+                green: [
+                    { q: "O farol estÃ¡ verde mas o cruzamento estÃ¡ bloqueado. VocÃª:", a: "Espera antes da faixa", o: ["Entra assim mesmo", "Buzina alto", "DÃ¡ rÃ©"] },
+                    { q: "O sinal abriu. O que checar primeiro?", a: "Se o cruzamento estÃ¡ livre", o: ["O celular", "O rÃ¡dio", "A pressÃ£o do pneu"] },
+                    { q: "Passar no farol verde em alta velocidade Ã©:", a: "Inseguro em cruzamentos", o: ["Correto", "Profissional", "ObrigatÃ³rio"] }
+                ],
+                general: [
+                    { q: "DistÃ¢ncia lateral segura para passar ciclista?", a: "1.5 metros", o: ["0.5m", "Perto", "10 metros"] },
+                    { q: "O uso do cinto de seguranÃ§a Ã© obrigatÃ³rio para:", a: "Todos no veÃ­culo", o: ["SÃ³ o motorista", "SÃ³ os bancos da frente", "SÃ³ carros velhos"] },
+                    { q: "Usar o celular ao volante aumenta o risco de acidente em:", a: "400%", o: ["10%", "0%", "2%"] }
+                ]
+            },
+            es: {
+                red: [
+                    { q: "La luz se puso roja. Â¿QuÃ© debes hacer?", a: "Detenerse por completo", o: ["Acelerar mÃ¡s", "Cruzar con cuidado", "Tocar bocina y cruzar"] },
+                    { q: "Â¿Multa por pasarse un semÃ¡foro en rojo?", a: "Multa Muy Grave", o: ["Ninguna", "Solo advertencia", "Multa Leve"] },
+                    { q: "Â¿En semÃ¡foro rojo, el peatÃ³n tiene prioridad?", a: "Siempre", o: ["Nunca", "Solo mayores", "Solo con guardias"] },
+                    { q: "Detenerse en el paso de peatones con luz roja es:", a: "InfracciÃ³n de trÃ¡fico", o: ["Permitido", "Recomendado", "Opcional"] },
+                    { q: "Una ambulancia con sirena estÃ¡ detrÃ¡s en luz roja:", a: "Ceder el paso con cuidado", o: ["Quedarse quieto", "Esperar el verde", "Tocar bocina"] }
+                ],
+                yellow: [
+                    { q: "Â¿Comportamiento correcto en luz amarilla?", a: "Reducir la velocidad y parar", o: ["Acelerar rÃ¡pido", "Frenar de golpe", "Mantener velocidad"] },
+                    { q: "Â¿QuÃ© indica la luz amarilla?", a: "AtenciÃ³n: a punto de cerrar", o: ["Ir a toda velocidad", "Luz rota", "Girar a la derecha"] },
+                    { q: "Â¿Es seguro acelerar en amarillo?", a: "No, alto riesgo", o: ["SÃ­, siempre", "Solo si estÃ¡ lejos", "Si no hay guardias"] },
+                    { q: "Luz amarilla intermitente en una intersecciÃ³n significa:", a: "PrecauciÃ³n: revisa tu entorno", o: ["Acelera", "Para el auto", "Da la vuelta"] }
+                ],
+                green: [
+                    { q: "La luz estÃ¡ verde pero la intersecciÃ³n estÃ¡ bloqueada:", a: "Esperar antes de la lÃ­nea", o: ["Entrar de todos modos", "Tocar bocina", "Retroceder"] },
+                    { q: "La seÃ±al se puso verde. Â¿QuÃ© revisar primero?", a: "Si el cruce estÃ¡ libre", o: ["Tu telÃ©fono", "La radio", "PresiÃ³n del neumÃ¡tico"] },
+                    { q: "Cruzar un semÃ¡foro verde a alta velocidad es:", a: "Inseguro en intersecciones", o: ["Correcto", "Profesional", "Obligatorio"] }
+                ],
+                general: [
+                    { q: "Â¿Distancia lateral segura para pasar a un ciclista?", a: "1.5 metros", o: ["0.5m", "Cerca", "10 metros"] },
+                    { q: "Â¿El uso del cinturÃ³n de seguridad es obligatorio para:", a: "Todos en el vehÃ­culo", o: ["Solo el conductor", "Solo asientos delanteros", "Solo autos viejos"] },
+                    { q: "Usar el telÃ©fono mientras conduces aumenta el riesgo de accidente en:", a: "400%", o: ["10%", "0%", "2%"] }
+                ]
+            },
+            zh: {
+                red: [
+                    { q: "çº¢ç¯äº®äº†ã€‚ ä½ è¯¥æ€Žä¹ˆåŠžï¼Ÿ", a: "å®Œå…¨åœæ­¢", o: ["åŠ é€Ÿ", "å°å¿ƒé€šè¿‡", "é¸£ç¬›å¹¶é€šè¿‡"] },
+                    { q: "é—¯çº¢ç¯ head çš„å¤„ç½šï¼Ÿ", a: "éžå¸¸ä¸¥é…·çš„ç½šæ¬¾", o: ["æ²¡æœ‰", "åªæ˜¯è­¦å‘Š", "è½»å¾®ç½šæ¬¾"] },
+                    { q: "åœ¨çº¢ç¯ä¸‹ï¼Œè¡Œäººæœ‰ä¼˜å…ˆæƒå—ï¼Ÿ", a: "æ€»æ˜¯", o: ["ä»Žä¸", "åªæœ‰è€äºº", "åªæœ‰ä¿å®‰"] },
+                    { q: "çº¢ç¯æ—¶åœåœ¨äººè¡Œé“ä¸Šæ˜¯ï¼š", a: "äº¤é€šè¿è§„", o: ["å…è®¸çš„", "æŽ¨èçš„", "å¯é€‰çš„"] },
+                    { q: "çº¢ç¯æ—¶æ•‘æŠ¤è½¦åœ¨ä½ åŽé¢é¸£ç¬›ï¼š", a: "å°å¿ƒè®©è·¯", o: ["ä¿æŒä¸åŠ¨", "ç­‰ç»¿ç¯", "æŒ‰å–‡å­"] }
+                ],
+                yellow: [
+                    { q: "é»„ç¯æ—¶çš„æ­£ç¡®è¡Œä¸ºæ˜¯ä»€ä¹ˆï¼Ÿ", a: "å‡é€Ÿå¹¶åœè½¦", o: ["å¿«é€ŸåŠ é€Ÿ", "æ€¥åˆ¹è½¦", "ä¿æŒé€Ÿåº¦"] },
+                    { q: "é»„ç¯æŒ‡ç¤ºä»€ä¹ˆï¼Ÿ", a: "æ³¨æ„ï¼šå³å°†çº¢ç¯", o: ["å…¨é€Ÿå‰è¿›", "ç¯åäº†", "å³è½¬"] },
+                    { q: "é»„ç¯æ—¶åŠ é€Ÿå®‰å…¨å—ï¼Ÿ", a: "ä¸ï¼Œäº‹æ•…é«˜å‘", o: ["æ˜¯çš„", "åªæœ‰å½“ä½ å¾ˆè¿œæ—¶", "å¦‚æžœæ²¡æœ‰è­¦å¯Ÿ"] },
+                    { q: "è·¯å£é»„ç¯é—ªçƒè¡¨ç¤ºï¼š", a: "æ³¨æ„å‘¨å›´çŽ¯å¢ƒ", o: ["åŠ é€Ÿ", "åœä¸‹è½¦", "å›žå¤´"] }
+                ],
+                green: [
+                    { q: "ç»¿ç¯äº®äº†ä½†è·¯å£è¢«å µã€‚ä½ ï¼š", a: "åœ¨åœæ­¢çº¿å‰ç­‰", o: ["æ— è®ºå¦‚ä½•è¿›å…¥", "å¤§å£°é¸£ç¬›", "å€’è½¦"] },
+                    { q: "ç»¿ç¯äº®äº†ã€‚ç¬¬ä¸€ä»¶äº‹æ£€æŸ¥ä»€ä¹ˆï¼Ÿ", a: "è·¯å£æ˜¯å¦ç•…é€š", o: ["çœ‹æ‰‹æœº", "å¬æ”¶éŸ³æœº", "æ£€æŸ¥èƒŽåŽ‹"] },
+                    { q: "å…¨é€Ÿé€šè¿‡ç»¿ç¯æ˜¯ï¼š", a: "åœ¨è·¯å£ä¸å®‰å…¨", o: ["æ­£ç¡®", "ä¸“ä¸š", "å¿…é¡»"] }
+                ],
+                general: [
+                    { q: "è¶…è¶Šéª‘è¡Œè€…çš„å®‰å…¨ä¾§è·ï¼Ÿ", a: "1.5 ç±³", o: ["0.5ç±³", "é è¿‘", "10 ç±³"] },
+                    { q: "å®‰å…¨å¸¦æ˜¯å¼ºåˆ¶æ€§çš„ï¼š", a: "è½¦å†…æ‰€æœ‰äºº", o: ["åªæœ‰å¸æœº", "åªæœ‰å‰æŽ’", "åªæœ‰æ—§è½¦"] },
+                    { q: "å¼€è½¦ç”¨æ‰‹æœºå¢žåŠ äº‹æ•…é£Žé™©ï¼š", a: "400%", o: ["10%", "0%", "2%"] }
+                ]
+            }
+        };
 
-function applyLang() {
-    const l = I18N[curLang];
-    document.querySelectorAll('.hp-label').forEach(e => e.innerText = l.hp);
-    document.querySelectorAll('.nitro-label').forEach(e => e.innerText = l.nitro);
-    document.getElementById('start-btn').innerText = l.start;
-    document.getElementById('tut-btn').innerText = l.how;
-    document.getElementById('garage-btn').innerText = l.garage;
-    document.getElementById('tut-title').innerText = l.tutTitle;
-    document.getElementById('tut-text').innerHTML = l.tutText;
-    document.getElementById('exit-tut').innerText = l.back;
-    document.getElementById('gar-title').innerText = l.garTitle;
-    document.getElementById('exit-garage').innerText = l.back;
-    document.getElementById('resume-btn').innerText = l.resume;
-    document.getElementById('restart-btn').innerText = l.restart;
-    document.getElementById('back-menu').innerText = l.menu;
-    document.getElementById('res-menu').innerText = l.menuBtn;
-    document.getElementById('retry-btn').innerText = l.retry;
-    document.getElementById('ts').innerText = l.kmh;
-    document.getElementById('pause-title').innerText = l.paused;
-    document.getElementById('shop-btn').innerText = l.shop;
-    document.getElementById('shop-title').innerText = l.shopTitle;
-    document.getElementById('exit-shop').innerText = l.back;
-    document.getElementById('disc-text').innerText = l.disc;
-    document.getElementById('goal-label').innerText = l.goal;
-    document.getElementById('main-title').innerText = l.hs;
-    syncHUD(); 
-}
+        const I18N = {
+            pt: { hs: "SEGURANÃ‡A NA ESTRADA", hp: "DURABILIDADE", nitro: "NITRO", goal: "META:", bal: "SALDO ACUMULADO: $", balMenu: "SALDO ATUAL: $", balGarage: "SEU SALDO: $", start: "INICIAR CORRIDA", how: "COMO JOGAR", garage: "GARAGEM", shop: "LOJA DE MELHORIAS", shopTitle: "OFICINA", lvl: "NÃVEL", upg: "MELHORAR", max: "MÃXIMO", tutTitle: "TUTORIAL", tutText: "â€¢ <b>W / â¬†ï¸</b>: Acelerar<br>â€¢ <b>S / â¬‡ï¸</b>: Frear / RÃ©<br>â€¢ <b>A - D / â¬…ï¸ - âž¡ï¸</b>: DireÃ§Ã£o<br>â€¢ <b>ESPAÃ‡O</b>: Ativar <b>NITRO</b><br>â€¢ <b>QUIZ</b>: Resolva em 10s para ganhar $ e HP!<br>â€¢ <b>GARAGEM</b>: Compre carros melhores.", back: "VOLTAR", garTitle: "GARAGEM", buy: "COMPRAR", owned: "POSSUI", equip: "EQUIPADO", select: "SELECIONAR", locked: "BLOQUEADO", paused: "PAUSADO", resume: "VOLTAR", restart: "REINICIAR", menu: "MENU PRINCIPAL", end: "FIM", victory: "VITÃ“RIA!", failed: "FALHOU", retry: "TENTAR NOV.", menuBtn: "MENU", trafficPop: "ðŸš¦ FAROL Ã€ FRENTE!!", kmh: "KM/H", disc: "Regras conforme as Leis de TrÃ¢nsito Brasileiras" },
+            en: { hs: "SECURITY ON THE ROAD", hp: "DURABILITY", nitro: "NITRO", goal: "GOAL:", bal: "BALANCE: $", balMenu: "CURRENT BALANCE: $", balGarage: "YOUR BALANCE: $", start: "START RACE", how: "HOW TO PLAY", garage: "GARAGE", shop: "UPGRADE SHOP", shopTitle: "WORKSHOP", lvl: "LEVEL", upg: "UPGRADE", max: "MAX", tutTitle: "TUTORIAL", tutText: "â€¢ <b>W / â¬†ï¸</b>: Accelerate<br>â€¢ <b>S / â¬‡ï¸</b>: Brake / Reverse<br>â€¢ <b>A - D / â¬…ï¸ - âž¡ï¸</b>: Steering<br>â€¢ <b>SPACE</b>: Activate <b>NITRO</b><br>â€¢ <b>QUIZ</b>: Solve in 10s to gain $ and HP!<br>â€¢ <b>GARAGE</b>: Buy cars to improve stats.", back: "BACK", garTitle: "GARAGE", buy: "BUY", owned: "OWNED", equip: "EQUIPPED", select: "SELECT", locked: "LOCKED", paused: "PAUSED", resume: "RESUME", restart: "RESTART", menu: "MAIN MENU", end: "END", victory: "VICTORY!", failed: "FAILED", retry: "RETRY", menuBtn: "MENU", trafficPop: "ðŸš¦ TRAFFIC LIGHT AHEAD!!", kmh: "KM/H", disc: "Rules comply with Brazilian Traffic Laws" },
+            es: { hs: "SEGURIDAD EN LA VÃA", hp: "DURABILIDAD", nitro: "NITRO", goal: "META:", bal: "SALDO: $", balMenu: "SALDO ACTUAL: $", balGarage: "TU SALDO: $", start: "INICIAR CARRERA", how: "CÃ“MO JUGAR", garage: "GARAJE", shop: "TIENDA DE MELHORIAS", shopTitle: "TALLER", lvl: "NIVEL", upg: "MEJORAR", max: "MÃXIMO", tutTitle: "TUTORIAL", tutText: "â€¢ <b>W / â¬†ï¸</b>: Acelerar<br>â€¢ <b>S / â¬‡ï¸</b>: Frenar / Marcha atrÃ¡s<br>â€¢ <b>A - D / â¬…ï¸ - âž¡ï¸</b>: DirecciÃ³n<br>â€¢ <b>ESPACIO</b>: Activar <b>NITRO</b><br>â€¢ <b>QUIZ</b>: Â¡Resuelve en 10s para ganar $ e HP!<br>â€¢ <b>GARAJE</b>: Compra coches.", back: "VOLVER", garTitle: "GARAJE", buy: "COMPRAR", owned: "OBTENIDO", equip: "EQUIPADO", select: "SELECCIONAR", locked: "BLOQUEADO", paused: "PAUSADO", resume: "REANUDAR", restart: "REINICIAR", menu: "MENÃš PRINCIPAL", end: "FIN", victory: "Â¡VICTORIA!", failed: "FRACASÃ“", retry: "REINTENTAR", menuBtn: "MENÃš", trafficPop: "ðŸš¦ Â¡SEMÃFORO EN ADELANTE!", kmh: "KM/H", disc: "Regras conforme a las Leyes de TrÃ¢nsito BrasileÃ±as" },
+            zh: { hs: "é“è·¯å®‰å…¨", hp: "è€ä¹…åº¦", nitro: "æ°®æ°”", goal: "ç›®æ ‡ï¼š", bal: "ä½™é¢ï¼š$", balMenu: "å½“å‰ä½™é¢ï¼š$", balGarage: "ä½ çš„ä½™é¢ï¼š$", start: "å¼€å§‹æ¯”èµ›", how: "æ€Žä¹ˆçŽ©", garage: "è½¦åº“", shop: "å‡çº§å•†åº—", shopTitle: "å·¥ä½œé—´", lvl: "ç­‰çº§", upg: "å‡çº§", max: "æœ€å¤§", tutTitle: "æ•™ç¨‹", tutText: "â€¢ <b>W / â¬†ï¸</b>: åŠ é€Ÿ<br>â€¢ <b>S / â¬‡ï¸</b>: åˆ¹è½¦ / å€’è½¦<br>â€¢ <b>A - D / â¬…ï¸ - âž¡ï¸</b>: è½¬å‘<br>â€¢ <b>ç©ºæ ¼</b>: æ¿€æ´» <b>æ°®æ°”</b><br>â€¢ <b>æµ‹è¯•</b>: è§£ç­”å¯èŽ·å¾—é‡‘é’±ï¼<br>â€¢ <b>è½¦åº“</b>: è´­ä¹°æ±½è½¦ã€‚", back: "è¿”å›ž", garTitle: "è½¦åº“", buy: "è´­ä¹°", owned: "æ‹¥æœ‰", equip: "è£…å¤‡", select: "é€‰æ‹©", locked: "é”å®š", paused: "æš‚åœ", resume: "ç»§ç»­", restart: "é‡æ–°å¼€å§‹", menu: "ä¸»èœå•", end: "ç»“æŸ", victory: "èƒœåˆ©ï¼", failed: "å¤±è´¥", retry: "é‡è¯•", menuBtn: "èœå•", trafficPop: "ðŸš¦ å‰æ–¹æœ‰çº¢ç»¿ç¯!!", kmh: "KM/H", disc: "è§„åˆ™ç¬¦åˆå·´è¥¿äº¤é€šæ³•" }
+        };
 
-function t(key) { return I18N[curLang][key]; }
 
 function changeLang(l) {
     curLang = l;
@@ -653,7 +620,7 @@ function changeLang(l) {
             showSaveMsg();
         }
         function showSaveMsg() {
-            showPopup("💾 PROGRESS SAVED", "var(--safety-cyan)");
+            showPopup("ÃƒÂ°Ã…Â¸Ã¢â‚¬â„¢Ã‚Â¾ PROGRESS SAVED", "var(--safety-cyan)");
         }
         function showPopup(txt, color) {
             const msg = document.createElement('div');
@@ -726,14 +693,14 @@ function changeLang(l) {
         function drawPost(ctx, y, color) {
             ctx.save(); ctx.translate(300, y);
             // Estrutura Superior COLOSSAL
-            ctx.fillStyle = '#000'; ctx.fillRect(-250, -220, 500, 35); // Viga superior reforçada
+            ctx.fillStyle = '#000'; ctx.fillRect(-250, -220, 500, 35); // Viga superior reforÃƒÆ’Ã‚Â§ada
             ctx.fillStyle = '#111'; ctx.fillRect(-270, -220, 50, 600); ctx.fillRect(220, -220, 50, 600); // Postes laterais gigantes
             
             // Caixa do farol GIGANTE com detalhes
             ctx.fillStyle = '#050505'; ctx.beginPath(); ctx.roundRect(-60, -280, 120, 240, 15); ctx.fill();
             ctx.strokeStyle = '#333'; ctx.lineWidth = 6; ctx.stroke();
             
-            // Luzes ENORMES com efeitos de brilho (Holográficas)
+            // Luzes ENORMES com efeitos de brilho (HologrÃƒÆ’Ã‚Â¡ficas)
             const sz = 30;
             const drawLight = (ly, lc, lcolor, isLit) => {
                 ctx.fillStyle = isLit ? lcolor : "#111";
@@ -847,7 +814,7 @@ function changeLang(l) {
         function init() {
             const level = game.upgs[game.sel];
             const c = { ...CARS[game.sel] };
-            // Aumenta stats com base no nível
+            // Aumenta stats com base no nÃƒÆ’Ã‚Â­vel
             c.s = c.s * (1 + (level - 1) * 0.15);
             c.a = c.a * (1 + (level - 1) * 0.2);
 
@@ -897,20 +864,20 @@ function changeLang(l) {
                 if (game.started) {
                     game.qClock += dt; 
                     
-                    // LÓGICA DO FAROL DE RUA (3s DE ANTECIPAÇÃO) - DESATIVADO A PEDIDO
+                    // LÃƒÆ’Ã¢â‚¬Å“GICA DO FAROL DE RUA (3s DE ANTECIPAÃƒÆ’Ã¢â‚¬Â¡ÃƒÆ’Ã†â€™O) - DESATIVADO A PEDIDO
                     game.roadEv.clock += dt;
                     if (false && !game.roadEv.active && game.roadEv.clock >= game.roadEv.next) {
                         game.roadEv.active = true;
                         game.roadEv.clock = 0;
                         game.roadEv.y = -2000; 
-                        game.roadEv.objDelay = 3.0; // 3 SEG DE ESPERA PARA O FAROL FÍSICO
+                        game.roadEv.objDelay = 3.0; // 3 SEG DE ESPERA PARA O FAROL FÃƒÆ’Ã‚ÂSICO
                         game.roadEv.triggered = false; 
                         const rnd = Math.random();
                         game.roadEv.color = rnd < 0.6 ? 'red' : (rnd < 0.8 ? 'yellow' : 'green');
                         
                         showPopup(t("trafficPop"), "white");
 
-                        // LANÇA A PERGUNTA SINCRONIZADA EM TODAS AS CORES
+                        // LANÃƒÆ’Ã¢â‚¬Â¡A A PERGUNTA SINCRONIZADA EM TODAS AS CORES
                         setTimeout(() => {
                             if (game.roadEv.active) popQuiz(game.roadEv.color);
                         }, 1200); // 1.2 segundos depois da mensagem
@@ -927,14 +894,14 @@ function changeLang(l) {
                             game.roadEv.active = false;
                             game.roadEv.clock = 0;
                         } else if (game.roadEv.color === 'red' && game.v > 3 && game.roadEv.y > 200 && game.roadEv.y < 800) {
-                            game.hp -= 1.0; // Punição se furar o farol vermelho
+                            game.hp -= 1.0; // PuniÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o se furar o farol vermelho
                         }
                     }
                     
                     const diffScale = 1 + (game.d / game.goal) * 2.5;
                     game.obs.forEach(o => { 
                         o.y += game.v + (game.qActive ? 0 : (o.sp * diffScale)); 
-                        // Colisão ajustada para ignorar quando parado no farol
+                        // ColisÃƒÆ’Ã‚Â£o ajustada para ignorar quando parado no farol
                         if (game.v > 1 && Math.abs(o.x - game.px) < 40 && Math.abs(o.y - (canvas.height - 180)) < 75) { 
                             game.hp -= 0.8; game.v *= 0.85; 
                         } 
