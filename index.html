@@ -520,7 +520,7 @@
             muted: localStorage.getItem('otr_314_muted') === 'true',
             nColor: localStorage.getItem('otr_314_nc') || '#00a8ff',
             hp: 100, d: 0, v: 0, act: false, started: false, px: 300, offset: 0, obs: [], qClock: 0, lt: 0, paused: false,
-            nitro: 100, isNitro: false, nCD: 0, goal: 20000,
+            nitro: 100, isNitro: false, nCD: 0, goal: 20000, qActive: false,
             roadEv: { active: false, color: '', clock: 0, next: 10, duration: 6, y: -2000, triggered: false, objDelay: 0 }
         };
 
@@ -640,6 +640,7 @@
         function popQuiz(type) {
             const scr = document.getElementById('scr-quiz');
             if (scr && !scr.classList.contains('hide')) return;
+            game.qActive = true;
             
             // FILTRA PERGUNTA PELA COR OU GERAL
             const pool = QUIZ_LIST[type] || QUIZ_LIST.general;
@@ -660,6 +661,7 @@
             const endQ = (isC) => {
                 if (answered) return;
                 answered = true;
+                game.qActive = false;
                 
                 qBox.style.pointerEvents = 'none'; 
                 const buttons = qBox.querySelectorAll('button');
@@ -727,7 +729,7 @@
 
         function init() {
             const c = CARS[game.sel];
-            game.hp = 100; game.d = 0; game.v = 0; game.px = 300; game.qClock = 0; game.started = false; game.obs = []; game.nitro = 100; game.nCD = 0;
+            game.hp = 100; game.d = 0; game.v = 0; game.px = 300; game.qClock = 0; game.started = false; game.obs = []; game.nitro = 100; game.nCD = 0; game.qActive = false;
             game.goal = c.g || 20000;
             game.roadEv = { active: false, color: '', clock: 0, next: 8, duration: 6, y: -2000, objDelay: 0 };
             nextObsY = -800;
@@ -741,14 +743,19 @@
             if (game.act && !game.paused) {
                 const dt = (now - game.lt) / 1000; game.lt = now;
                 const c = CARS[game.sel];
-                if (keys['w'] || keys['ArrowUp']) { game.v += c.a; game.started = true; }
-                else if (keys['s'] || keys['ArrowDown']) game.v -= c.a;
-                else game.v *= 0.98;
+                
+                if (!game.qActive) {
+                    if (keys['w'] || keys['ArrowUp']) { game.v += c.a; game.started = true; }
+                    else if (keys['s'] || keys['ArrowDown']) game.v -= c.a;
+                    else game.v *= 0.98;
 
-                if (keys['a'] || keys['ArrowLeft']) game.px -= 6;
-                if (keys['d'] || keys['ArrowRight']) game.px += 6;
+                    if (keys['a'] || keys['ArrowLeft']) game.px -= 6;
+                    if (keys['d'] || keys['ArrowRight']) game.px += 6;
+                } else {
+                    game.v *= 0.90; // Stop car relative to dt but 0.90 per frame for now is ok
+                }
 
-                if (keys[' '] && game.started && game.nitro >= 5 && game.nCD <= 0) { game.isNitro = true; game.nitro -= 1; game.v += 0.5; if (game.nitro <= 0) game.nCD = 10; }
+                if (keys[' '] && game.started && game.nitro >= 5 && game.nCD <= 0 && !game.qActive) { game.isNitro = true; game.nitro -= 1; game.v += 0.5; if (game.nitro <= 0) game.nCD = 10; }
                 else { game.isNitro = false; if (game.nCD > 0) { game.nCD -= dt; game.nitro = Math.min(100, game.nitro + 12 * dt); } else if (game.nitro < 100) game.nitro += 6 * dt; }
 
                 game.v = Math.max(-c.s, Math.min(game.v, game.isNitro ? c.s * 1.5 : c.s));
